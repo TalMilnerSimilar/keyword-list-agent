@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CreateButton from './CreateButton';
+import GenerateFromSelectedButton from './GenerateFromSelectedButton';
 
 const KeywordDetails = ({
   isCreateWithAI,
@@ -254,12 +255,38 @@ const KeywordDetails = ({
                             }}
                             onMouseDown={(e) => {
                               if (currentTopic.trim() && !isLoadingKeywords) {
-                                e.target.style.background = 'linear-gradient(90deg, #1e3a8a 0.21%, #1a9f7f 99.79%)';
+                                e.target.style.background = 'linear-gradient(89.62deg, #d8e3fe, #d4f7ee)';
+                                e.target.style.border = '1px solid #2d54b8';
+                                e.target.style.padding = '0px';
+                                const innerDiv = e.target.querySelector('div');
+                                if (innerDiv) {
+                                  innerDiv.style.background = 'transparent';
+                                  innerDiv.style.borderRadius = '640px';
+                                }
+                                const textSpan = e.target.querySelector('span');
+                                if (textSpan) {
+                                  textSpan.style.background = 'linear-gradient(90deg, #2d54b8, #1d9f83)';
+                                  textSpan.style.webkitBackgroundClip = 'text';
+                                  textSpan.style.webkitTextFillColor = 'transparent';
+                                }
                               }
                             }}
                             onMouseUp={(e) => {
                               if (currentTopic.trim() && !isLoadingKeywords) {
-                                e.target.style.background = 'linear-gradient(90deg, #2d54b8 0.21%, #25c0a0 99.79%)';
+                                e.target.style.background = 'linear-gradient(89.62deg, #d8e3fe, #d4f7ee)';
+                                e.target.style.border = '1px solid #2d54b8';
+                                e.target.style.padding = '0px';
+                                const innerDiv = e.target.querySelector('div');
+                                if (innerDiv) {
+                                  innerDiv.style.background = 'transparent';
+                                  innerDiv.style.borderRadius = '640px';
+                                }
+                                const textSpan = e.target.querySelector('span');
+                                if (textSpan) {
+                                  textSpan.style.background = 'linear-gradient(90deg, #2d54b8, #1d9f83)';
+                                  textSpan.style.webkitBackgroundClip = 'text';
+                                  textSpan.style.webkitTextFillColor = 'transparent';
+                                }
                               }
                             }}
                           >
@@ -383,6 +410,8 @@ const KeywordDetails = ({
                             </div>
                         </div>
                       </div>
+
+
                       
                       {/* Keyword limit info row */}
                       {selectedKeywords.length >= 50 && (
@@ -407,7 +436,24 @@ const KeywordDetails = ({
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-4 h-full">
+                            <div className="p-4">
+                                {isCreateWithAI && (
+                                  <GenerateFromSelectedButton 
+                                    selectedKeywords={selectedKeywords}
+                                    isLoading={isLoadingKeywords}
+                                    hasGenerated={hasGenerated}
+                                    onClick={() => {
+                                      if (!isLoadingKeywords) {
+                                        const keywordContext = selectedKeywords.join(', ');
+                                        setAiTopic(keywordContext);
+                                        setIsCreateWithAI(true);
+                                        onSwitchToAI(keywordContext);
+                                        // Trigger generation immediately
+                                        onAICreate(keywordContext);
+                                      }
+                                    }}
+                                  />
+                                )}
                                 <div className="flex flex-wrap" style={{ gap: '8px' }}>
                                     {selectedKeywords.map((keyword, index) => (
                                         <div key={`${keyword}-${index}`} className="bg-white flex items-center gap-2 pl-3 pr-1 h-8 rounded-[40px] shadow-[0px_3px_5px_0px_rgba(42,62,82,0.12)] shrink-0">
@@ -425,7 +471,7 @@ const KeywordDetails = ({
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                           </div>
                         )}
                         <div className="absolute border border-border-default border-solid inset-0 pointer-events-none rounded"></div>
                       </div>
@@ -461,4 +507,4 @@ const KeywordDetails = ({
   );
 };
 
-export default KeywordDetails; 
+export default KeywordDetails;
