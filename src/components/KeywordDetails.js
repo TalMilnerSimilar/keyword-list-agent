@@ -314,7 +314,7 @@ const KeywordDetails = ({
                                       setCurrentTopic('');
                                     }
                                   }}
-                                  placeholder="e.g. headphones, wireless, bluetooth, noise cancelling"
+                                  placeholder="E.g. headphones, wireless, bluetooth"
                                   className={`flex-1 bg-transparent text-sm font-dm-sans focus:outline-none leading-[20px] ${
                                     currentTopic.trim() ? 'text-[#092540]' : 'text-text-placeholder'
                                   }`}
