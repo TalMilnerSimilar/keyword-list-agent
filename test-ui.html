@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopper Agent</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 40px;
+      }
+
+      .form-group {
+        margin-bottom: 24px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+        font-size: 1rem;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        font-family: inherit;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-group select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        padding-right: 40px;
+        cursor: pointer;
+      }
+
+      .form-group select:hover {
+        border-color: #667eea;
+      }
+
+      .form-group select option {
+        padding: 8px 12px;
+        background: white;
+        color: #333;
+      }
+
+      .form-group select option:hover {
+        background: #f8f9fa;
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 30px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-secondary {
+        background: #f8f9fa;
+        color: #495057;
+        border: 2px solid #e9ecef;
+      }
+
+      .btn-secondary:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      .response-section {
+        margin-top: 30px;
+      }
+
+      .response-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 4px solid #667eea;
+      }
+
+      .response-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .response-title {
+        font-weight: 600;
+        color: #333;
+        font-size: 1.1rem;
+      }
+
+      .response-status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .status-success {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .agent-select-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .agent-select-container select {
+        flex: 1;
+      }
+
+      .agent-select-container .btn {
+        flex: none;
+        white-space: nowrap;
+      }
+
+      .agent-status {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+
+      .agent-status.loading {
+        color: #856404;
+        background-color: #fff3cd;
+      }
+
+      .agent-status.success {
+        color: #155724;
+        background-color: #d4edda;
+      }
+
+      .agent-status.error {
+        color: #721c24;
+        background-color: #f8d7da;
+      }
+
+      .form-help {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 4px;
+        display: block;
+      }
+
+      .response-content {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 12px;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        max-height: 300px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #dc3545;
+      }
+
+      .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #28a745;
+      }
+
+      .health-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .health-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #dc3545;
+      }
+
+      .health-indicator.online {
+        background: #28a745;
+      }
+
+      /* Keyword chips styling */
+      .keywords-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .keyword-chip {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-block;
+        transition: all 0.2s ease;
+        user-select: none;
+      }
+
+      .keyword-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+      }
+
+      .keywords-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .keywords-count {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 500;
+      }
+
+      .no-keywords {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🤖 Shopper Agent</h1>
+        <p>Get keywords for a given topic and domain</p>
+      </div>
+
+      <div class="content">
+        <div class="health-status">
+          <div class="health-indicator" id="healthIndicator"></div>
+          <span id="healthStatus">Checking API status...</span>
+        </div>
+
+        <form id="agentForm">
+          <div class="form-group">
+            <label for="topic">Topic *</label>
+            <input
+              type="text"
+              id="topic"
+              name="topic"
+              placeholder="Enter the topic for the agent"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="domain">Domain *</label>
+            <select id="domain" name="domain" required>
+              <option value="">Select a domain</option>
+              <option value="amazon.com">amazon.com</option>
+              <option value="amazon.de">amazon.de</option>
+              <option value="amazon.fr">amazon.fr</option>
+              <option value="amazon.it">amazon.it</option>
+              <option value="amazon.es">amazon.es</option>
+              <option value="amazon.co.uk">amazon.co.uk</option>
+              <option value="amazon.ca">amazon.ca</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="agentId">Agent (Optional)</label>
+            <div class="agent-select-container">
+              <select id="agentId" name="agentId">
+                <option value="">Use default agent</option>
+              </select>
+              <button
+                type="button"
+                id="refreshAgentsBtn"
+                class="btn btn-secondary"
+                style="margin-left: 10px"
+              >
+                🔄 Refresh Agents
+              </button>
+            </div>
+            <small class="form-help"
+              >Leave empty to use the default agent</small
+            >
+            <div id="agentStatus" class="agent-status"></div>
+          </div>
+
+          <div class="button-group">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              <span id="submitText">Get Keywords</span>
+              <span
+                id="submitLoading"
+                class="loading"
+                style="display: none"
+              ></span>
+            </button>
+          </div>
+        </form>
+
+        <div id="messages"></div>
+
+        <div
+          class="response-section"
+          id="responseSection"
+          style="display: none"
+        >
+          <div class="response-card">
+            <div class="response-header">
+              <div class="response-title">Agent Response</div>
+              <div class="response-status" id="responseStatus"></div>
+            </div>
+            <div class="response-content" id="responseContent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE_URL =
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1'
+          ? 'http://localhost:8897/agent'
+          : 'https://shopper-agents-api.sandbox.similarweb.com/agent';
+
+      // Check API health on page load
+      document.addEventListener('DOMContentLoaded', async () => {
+        await checkHealth();
+        await loadAvailableAgents();
+      });
+
+      async function checkHealth() {
+        const healthIndicator = document.getElementById('healthIndicator');
+        const healthStatus = document.getElementById('healthStatus');
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/health`);
+          if (response.ok) {
+            healthIndicator.classList.add('online');
+            healthStatus.textContent = 'API is online';
+          } else {
+            throw new Error('Health check failed');
+          }
+        } catch (error) {
+          healthIndicator.classList.remove('online');
+          healthStatus.textContent =
+            'API is offline - make sure the server is running';
+        }
+      }
+
+      async function loadAvailableAgents() {
+        const agentStatus = document.getElementById('agentStatus');
+        const agentSelect = document.getElementById('agentId');
+
+        try {
+          console.log('Loading available agents...');
+          agentStatus.textContent = 'Loading agents...';
+          agentStatus.className = 'agent-status loading';
+
+          const response = await fetch(`${API_BASE_URL}/available-agents`);
+          console.log('Response status:', response.status);
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Available agents data:', data);
+
+            if (data.success && data.data && data.data.length > 0) {
+              // Clear existing options except the first one
+              while (agentSelect.children.length > 1) {
+                agentSelect.removeChild(agentSelect.lastChild);
+              }
+
+              console.log('Found', data.data.length, 'agents');
+
+              data.data.forEach((agent) => {
+                const option = document.createElement('option');
+                option.value = agent.id;
+                option.textContent = agent.name || `Agent ${agent.id}`;
+                agentSelect.appendChild(option);
+              });
+
+              console.log('Agents loaded successfully');
+              agentStatus.textContent = `Loaded ${data.data.length} agents`;
+              agentStatus.className = 'agent-status success';
+            } else {
+              console.log('No agents data or success false:', data);
+              agentStatus.textContent = 'No agents available';
+              agentStatus.className = 'agent-status error';
+            }
+          } else {
+            console.log('Failed to fetch agents, status:', response.status);
+            const errorText = await response.text();
+            console.log('Error response:', errorText);
+            agentStatus.textContent = `Failed to load agents (${response.status})`;
+            agentStatus.className = 'agent-status error';
+          }
+        } catch (error) {
+          console.error('Failed to load available agents:', error);
+          agentStatus.textContent = 'Network error loading agents';
+          agentStatus.className = 'agent-status error';
+        }
+      }
+
+      function showMessage(message, type = 'error') {
+        const messagesDiv = document.getElementById('messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className =
+          type === 'error' ? 'error-message' : 'success-message';
+        messageDiv.textContent = message;
+        messagesDiv.appendChild(messageDiv);
+
+        setTimeout(() => {
+          messageDiv.remove();
+        }, 5000);
+      }
+
+      function setLoading(isLoading) {
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const submitLoading = document.getElementById('submitLoading');
+
+        submitBtn.disabled = isLoading;
+        submitText.style.display = isLoading ? 'none' : 'inline';
+        submitLoading.style.display = isLoading ? 'inline-block' : 'none';
+      }
+
+      function displayResponse(response, success) {
+        const responseSection = document.getElementById('responseSection');
+        const responseStatus = document.getElementById('responseStatus');
+        const responseContent = document.getElementById('responseContent');
+
+        responseStatus.textContent = success ? 'Success' : 'Error';
+        responseStatus.className = `response-status ${success ? 'status-success' : 'status-error'}`;
+
+        if (success && Array.isArray(response) && response.length > 0) {
+          responseContent.innerHTML = `
+            <div class="keywords-header">
+              <span class="keywords-count">${response.length} Keywords</span>
+            </div>
+            <div class="keywords-container">
+              ${response
+                .map(
+                  (keyword) => `
+                <span class="keyword-chip">${keyword}</span>
+              `,
+                )
+                .join('')}
+            </div>
+          `;
+        } else if (
+          success &&
+          Array.isArray(response) &&
+          response.length === 0
+        ) {
+          responseContent.innerHTML = `
+            <div class="no-keywords">No keywords found for this topic and domain.</div>
+          `;
+        } else {
+          responseContent.innerHTML = `
+            <div class="response-content">
+              <pre>${JSON.stringify(response, null, 2)}</pre>
+            </div>
+          `;
+        }
+        responseSection.style.display = 'block';
+      }
+
+      // Handle form submission
+      document
+        .getElementById('agentForm')
+        .addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const topic = document.getElementById('topic').value.trim();
+          const domain = document.getElementById('domain').value.trim();
+          const agentId = document.getElementById('agentId').value.trim();
+
+          if (!topic || !domain) {
+            showMessage('Please fill in both topic and domain fields');
+            return;
+          }
+
+          setLoading(true);
+
+          try {
+            const requestBody = { topic, domain };
+            if (agentId) {
+              requestBody.agentId = agentId;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/invoke`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestBody),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              displayResponse(data, true);
+              showMessage('Agent invoked successfully!', 'success');
+            } else {
+              displayResponse(data, false);
+              showMessage(data.message || 'Failed to invoke agent');
+            }
+          } catch (error) {
+            displayResponse({ error: error.message }, false);
+            showMessage('Network error: ' + error.message);
+          } finally {
+            setLoading(false);
+          }
+        });
+
+      // Handle refresh agents button
+      document
+        .getElementById('refreshAgentsBtn')
+        .addEventListener('click', async () => {
+          await loadAvailableAgents();
+        });
+
+      // Handle get assistants button
+      document
+        .getElementById('getAssistantsBtn')
+        .addEventListener('click', async () => {
+          setLoading(true);
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/assistants`);
+            const data = await response.json();
+
+            if (response.ok) {
+              displayResponse(data, true);
+              showMessage('Assistants retrieved successfully!', 'success');
+            } else {
+              displayResponse(data, false);
+              showMessage(data.message || 'Failed to get assistants');
+            }
+          } catch (error) {
+            displayResponse({ error: error.message }, false);
+            showMessage('Network error: ' + error.message);
+          } finally {
+            setLoading(false);
+          }
+        });
+    </script>
+  </body>
+</html>
