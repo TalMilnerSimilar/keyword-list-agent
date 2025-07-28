@@ -288,7 +288,7 @@ const KeywordListAgent = () => {
 
         {/* Create Button (shown when panel is closed) */}
         {!isPanelOpen && (
-          <div className="absolute top-1/2 right-8 transform -translate-y-1/2">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <button
               onClick={handleOpenPanel}
               className="bg-primary-blue hover:bg-primary-dark text-white px-6 py-3 rounded-[18px] text-sm font-medium font-dm-sans shadow-lg transition-all duration-200 hover:shadow-xl"
