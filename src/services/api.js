@@ -38,7 +38,7 @@ class ApiService {
       const requestBody = { 
         topic, 
         domain: 'amazon.com',
-        agentId: 'ddc14fc3-3351-462d-b7e3-9da802fa87e1' // Guy's Assistant ID
+        agentId: 'f30f29fb-afb0-5f4a-8719-dcc0f4ee7585' // subtopics_agent ID
       };
 
       const response = await fetch(`${API_BASE_URL}/invoke`, {
@@ -85,162 +85,193 @@ class ApiService {
   groupKeywords(keywords) {
     if (!keywords || keywords.length === 0) return [];
 
-    const grouped = [];
-    
-    for (let i = 0; i < keywords.length; i += 8) {
-      const groupKeywords = keywords.slice(i, i + 8);
-      const groupName = this.analyzeAndNameGroup(groupKeywords);
-      
-      grouped.push({
-        name: groupName,
-        keywords: groupKeywords
-      });
-    }
-
-    return grouped;
-  }
-
-  analyzeAndNameGroup(keywords) {
-    if (!keywords || keywords.length === 0) return 'Other';
-
-    // Use compromise NLP library for intelligent keyword extraction
-    if (nlp) {
-      try {
-        // Join all keywords into one piece of text
-        const clusterText = keywords.join(" ");
-        
-        // Use compromise to extract nouns as possible keywords
-        let doc = nlp(clusterText);
-        const nouns = doc.nouns().out('array');
-        
-        // Get frequency count
-        const freq = {};
-        nouns.forEach(noun => {
-          const cleanNoun = noun.toLowerCase().trim();
-          if (cleanNoun.length > 2) { // Filter out very short words
-            freq[cleanNoun] = (freq[cleanNoun] || 0) + 1;
-          }
-        });
-        
-        // Sort keywords by frequency
-        const keywords = Object.keys(freq).sort((a, b) => freq[b] - freq[a]);
-        
-        // Name is top 2-3 keywords joined by space, capitalized
-        const name = keywords.slice(0, 3)
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-        
-        return name || "Keywords";
-      } catch (error) {
-        console.warn('Error in NLP analysis:', error);
-        return this.fallbackNaming(keywords);
-      }
-    } else {
-      // Fallback to pattern-based naming if compromise is not available
-      return this.fallbackNaming(keywords);
-    }
-  }
-
-  fallbackNaming(keywords) {
-    if (!keywords || keywords.length === 0) return 'Other';
-
-    // Convert keywords to lowercase for analysis
-    const lowerKeywords = keywords.map(k => k.toLowerCase());
-    
-    // Define patterns for different categories
-    const patterns = {
-      'Product Types': [
-        'wireless', 'bluetooth', 'wired', 'over-ear', 'on-ear', 'in-ear', 'open-back', 'closed-back',
-        'noise cancelling', 'noise canceling', 'active noise', 'passive noise', 'studio', 'gaming',
-        'sport', 'waterproof', 'water-resistant', 'portable', 'compact', 'premium', 'budget', 'cheap'
-      ],
-      'Features & Benefits': [
-        'noise cancelling', 'noise canceling', 'waterproof', 'water-resistant', 'wireless', 'bluetooth',
-        'long battery', 'fast charging', 'comfortable', 'lightweight', 'durable', 'high quality',
-        'premium', 'budget', 'cheap', 'inexpensive', 'hifi', 'studio quality', 'crystal clear',
-        'deep bass', 'balanced sound', 'surround sound', 'spatial audio'
-      ],
-      'Use Cases': [
-        'for gaming', 'for work', 'for travel', 'for exercise', 'for music', 'for calls',
-        'for streaming', 'for recording', 'for studio', 'for office', 'for home', 'for outdoor',
-        'for sports', 'for kids', 'for professional', 'for casual', 'for daily use'
-      ],
-      'Comparisons': [
-        'vs', 'versus', 'alternatives', 'competitors', 'similar', 'compare', 'comparison',
-        'better than', 'best', 'top', 'leading', 'popular', 'trending'
-      ],
-      'Reviews & Ratings': [
-        'review', 'reviews', 'rating', 'ratings', 'customer', 'user', 'feedback', 'testimonial',
-        'pros', 'cons', 'complaint', 'problem', 'issue', 'experience', 'opinion', 'recommendation'
-      ],
-      'Shopping': [
-        'price', 'cost', 'discount', 'sale', 'deal', 'offer', 'buy', 'purchase', 'shop',
-        'store', 'amazon', 'ebay', 'walmart', 'target', 'best buy', 'cheap', 'affordable'
-      ],
-      'Technical': [
-        'specification', 'specs', 'technical', 'details', 'features', 'specs sheet',
-        'frequency', 'impedance', 'sensitivity', 'driver', 'cable', 'connector', 'jack',
-        'usb', 'type-c', 'lightning', 'bluetooth version', 'codec', 'aptx', 'ldac'
-      ],
-      'Brands & Models': [
-        'sony', 'bose', 'sennheiser', 'audio-technica', 'beyerdynamic', 'akg', 'shure',
-        'jbl', 'beats', 'airpods', 'airpods pro', 'airpods max', 'wh-1000xm', 'qc35',
-        'hd', 'dt', 'k', 'mdr', 'wf', 'wh', 'qc', 'quietcomfort', 'momentum'
-      ],
-      'Accessories': [
-        'case', 'stand', 'mount', 'adapter', 'cable', 'wire', 'connector', 'jack',
-        'dongle', 'receiver', 'transmitter', 'charger', 'charging', 'carrying',
-        'protective', 'cover', 'skin', 'grip', 'holder', 'organizer'
-      ]
-    };
-
-    // Count matches for each category
-    const categoryScores = {};
-    
-    Object.keys(patterns).forEach(category => {
-      categoryScores[category] = 0;
-      patterns[category].forEach(pattern => {
-        lowerKeywords.forEach(keyword => {
-          if (keyword.includes(pattern)) {
-            categoryScores[category]++;
-          }
-        });
-      });
+    // Parse keywords to extract search volumes
+    const parsedKeywords = keywords.map(kw => {
+      const match = kw.match(/^(.+?)\s*\((\d+)\)$/);
+      return match ? {
+        keyword: match[1].trim(),
+        searchVolume: parseInt(match[2])
+      } : {
+        keyword: kw,
+        searchVolume: 0
+      };
     });
 
-    // Find the category with the highest score
-    let bestCategory = 'Other';
-    let bestScore = 0;
+    // Group keywords by semantic similarity
+    const clusters = this.createSemanticClusters(parsedKeywords);
+    
+    return clusters.map(cluster => ({
+      name: cluster.name,
+      keywords: cluster.keywords
+        .sort((a, b) => b.searchVolume - a.searchVolume) // Sort by search volume descending
+        .map(k => `${k.keyword} (${k.searchVolume})`)
+    }));
+  }
 
-    Object.keys(categoryScores).forEach(category => {
-      if (categoryScores[category] > bestScore) {
-        bestScore = categoryScores[category];
-        bestCategory = category;
+  createSemanticClusters(keywords) {
+    const clusters = [];
+    const usedKeywords = new Set();
+
+    // Extract the main topic from keywords to create dynamic patterns
+    const mainTopic = this.extractMainTopic(keywords);
+    
+    // Define semantic patterns for clustering - now dynamic based on topic
+    const semanticPatterns = [
+      {
+        name: `General ${mainTopic}`,
+        patterns: [mainTopic.toLowerCase()],
+        priority: 1
+      },
+      {
+        name: 'Cheap/Affordable Options',
+        patterns: ['cheap', 'budget', 'affordable', 'inexpensive'],
+        priority: 2
+      },
+      {
+        name: 'Best/Top Rated',
+        patterns: ['best', 'top', 'highest rated'],
+        priority: 3
+      },
+      {
+        name: 'Reviews & Ratings',
+        patterns: ['review', 'rating', 'feedback'],
+        priority: 4
+      },
+      {
+        name: 'Use Cases',
+        patterns: ['for ', 'use case', 'purpose'],
+        priority: 5
+      },
+      {
+        name: 'Features & Benefits',
+        patterns: ['waterproof', 'wireless', 'bluetooth', 'noise cancelling', 'noise canceling', 'battery', 'long lasting'],
+        priority: 6
+      },
+      {
+        name: 'Comparisons',
+        patterns: ['vs', 'versus', 'alternatives', 'competitors', 'similar'],
+        priority: 7
+      },
+      {
+        name: 'Shopping',
+        patterns: ['price', 'cost', 'discount', 'sale', 'deal', 'buy', 'purchase'],
+        priority: 8
+      }
+    ];
+
+    // Sort patterns by priority
+    semanticPatterns.sort((a, b) => a.priority - b.priority);
+
+    // Create clusters based on patterns
+    semanticPatterns.forEach(pattern => {
+      const matchingKeywords = keywords.filter(kw => {
+        if (usedKeywords.has(kw.keyword)) return false;
+        return pattern.patterns.some(p => 
+          kw.keyword.toLowerCase().includes(p.toLowerCase())
+        );
+      });
+
+      if (matchingKeywords.length > 0) {
+        clusters.push({
+          name: pattern.name,
+          keywords: matchingKeywords
+        });
+        matchingKeywords.forEach(kw => usedKeywords.add(kw.keyword));
       }
     });
 
-    // If no strong pattern is found, try to infer from keywords
-    if (bestScore === 0) {
-      // Check for specific keywords that might indicate category
-      const allKeywords = lowerKeywords.join(' ');
-      
-      if (allKeywords.includes('vs') || allKeywords.includes('versus') || allKeywords.includes('compare')) {
-        return 'Comparisons';
-      } else if (allKeywords.includes('review') || allKeywords.includes('rating') || allKeywords.includes('feedback')) {
-        return 'Reviews & Ratings';
-      } else if (allKeywords.includes('price') || allKeywords.includes('cost') || allKeywords.includes('sale')) {
-        return 'Shopping';
-      } else if (allKeywords.includes('spec') || allKeywords.includes('technical') || allKeywords.includes('detail')) {
-        return 'Technical';
-      } else if (allKeywords.includes('for ') || allKeywords.includes('use case')) {
-        return 'Use Cases';
-      } else {
-        return 'Product Types'; // Default fallback
-      }
+    // Group remaining keywords by common themes
+    const remainingKeywords = keywords.filter(kw => !usedKeywords.has(kw.keyword));
+    if (remainingKeywords.length > 0) {
+      const remainingClusters = this.groupRemainingKeywords(remainingKeywords);
+      clusters.push(...remainingClusters);
     }
 
-    return bestCategory;
+    return clusters;
   }
+
+  extractMainTopic(keywords) {
+    if (!keywords || keywords.length === 0) return 'Keywords';
+    
+    // Find the most common word or phrase that appears in multiple keywords
+    const wordFrequency = {};
+    
+    keywords.forEach(kw => {
+      const words = kw.keyword.toLowerCase().split(/\s+/);
+      words.forEach(word => {
+        if (word.length > 2) { // Filter out very short words
+          wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+        }
+      });
+    });
+    
+    // Find the most frequent word that appears in at least 2 keywords
+    const commonWords = Object.entries(wordFrequency)
+      .filter(([word, count]) => count >= 2)
+      .sort((a, b) => b[1] - a[1]);
+    
+    if (commonWords.length > 0) {
+      // Capitalize the first letter
+      return commonWords[0][0].charAt(0).toUpperCase() + commonWords[0][0].slice(1);
+    }
+    
+    // Fallback: use the first keyword as the topic
+    return keywords[0].keyword.split(' ')[0].charAt(0).toUpperCase() + keywords[0].keyword.split(' ')[0].slice(1);
+  }
+
+  groupRemainingKeywords(keywords) {
+    const clusters = [];
+    
+    // Group by common words
+    const wordFrequency = {};
+    keywords.forEach(kw => {
+      const words = kw.keyword.toLowerCase().split(/\s+/);
+      words.forEach(word => {
+        if (word.length > 3) { // Only consider words longer than 3 chars
+          wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+        }
+      });
+    });
+
+    // Find most common words
+    const commonWords = Object.entries(wordFrequency)
+      .filter(([word, count]) => count > 1)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([word]) => word);
+
+    // Create clusters based on common words
+    commonWords.forEach(word => {
+      const matchingKeywords = keywords.filter(kw => 
+        kw.keyword.toLowerCase().includes(word)
+      );
+      
+      if (matchingKeywords.length > 1) {
+        clusters.push({
+          name: `${word.charAt(0).toUpperCase() + word.slice(1)} Related`,
+          keywords: matchingKeywords
+        });
+      }
+    });
+
+    // Group remaining keywords
+    const usedInClusters = new Set();
+    clusters.forEach(cluster => {
+      cluster.keywords.forEach(kw => usedInClusters.add(kw.keyword));
+    });
+
+    const finalRemaining = keywords.filter(kw => !usedInClusters.has(kw.keyword));
+    if (finalRemaining.length > 0) {
+      clusters.push({
+        name: 'Other Keywords',
+        keywords: finalRemaining
+      });
+    }
+
+    return clusters;
+  }
+
+
 }
 
 export default new ApiService(); 

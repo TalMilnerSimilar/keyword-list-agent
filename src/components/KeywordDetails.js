@@ -102,7 +102,12 @@ const KeywordDetails = ({
     const canGenerate = (currentTopic.trim() || (includeSelectedKeywords && selectedKeywords.length > 0) || queryTags.length>0) && !isLoadingKeywords;
     if (canGenerate) {
         const userTopic = currentTopic.trim();
-        const selectionTopic = includeSelectedKeywords && selectedKeywords.length > 0 ? selectedKeywords.join(', ') : '';
+        const selectionTopic = includeSelectedKeywords && selectedKeywords.length > 0 ? 
+          selectedKeywords.map(keyword => {
+            // Extract just the keyword part without search volume
+            const match = keyword.match(/^(.+?)\s*\(\d+\)$/);
+            return match ? match[1].trim() : keyword;
+          }).join(', ') : '';
         const extraTags = queryTags.join(', ');
         let finalTopic = userTopic;
         if (selectionTopic) {
@@ -340,7 +345,7 @@ const KeywordDetails = ({
               <span className={`text-sm font-dm-sans leading-[20px] ${
                 selectedKeywords.length > 0 ? 'text-[#092540]' : 'text-[#b6bec6]'
               }`}>
-                Include Selected Keywords
+                Include your Selected Keywords in your topic
               </span>
             </div>
             

@@ -88,7 +88,8 @@ const KeywordListAgent = () => {
       if (result.success) {
         setGeneratedKeywords(result.keywords);
         setGroupedKeywords(result.groupedKeywords);
-        setTopic(topic.trim());
+        // Don't update the topic state with the final topic that includes selected keywords
+        // The topic state should only contain the user's original input
       } else {
         setApiError(result.error || 'Failed to generate keywords');
       }
