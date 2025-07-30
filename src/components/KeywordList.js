@@ -512,18 +512,18 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                       >
                         {formatVolume(totalVol)}
                       </span>
-                      <div className="absolute bottom-full right-0 mb-2 hidden whitespace-nowrap z-50">
+                      <div className="absolute right-full top-1/2 transform -translate-y-1/2 mr-2 hidden whitespace-nowrap z-50">
                         <div className="bg-[#092540] text-white text-xs font-dm-sans rounded py-2 pl-4 pr-2">
                           Total search volume for all keywords
                         </div>
                         <div 
-                          className="absolute right-2"
+                          className="absolute left-full top-1/2 transform -translate-y-1/2"
                           style={{
                             width: 0,
                             height: 0,
-                            borderLeft: '6px solid transparent',
-                            borderRight: '6px solid transparent',
-                            borderTop: '6px solid #092540',
+                            borderTop: '6px solid transparent',
+                            borderBottom: '6px solid transparent',
+                            borderLeft: '6px solid #092540',
                           }}
                         />
                       </div>
