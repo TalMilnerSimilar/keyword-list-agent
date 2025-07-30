@@ -86,6 +86,26 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
     return leaves.some(leaf => selectedKeywords.includes(leaf.name));
   };
 
+  const extractVolume = (name)=>{
+    const m=name.match(/\((\d[\d,]*)\)$/);
+    if(!m) return 0;
+    return parseInt(m[1].replace(/,/g,''),10);
+  };
+
+  const formatVolume = (n)=>{
+    if (n >= 1_000_000) {
+      const v = n / 1_000_000;
+      const str = v % 1 === 0 ? `${v}` : v.toFixed(1);
+      return `${str.replace(/\.0$/, '')}M`;
+    }
+    if (n >= 1_000) {
+      const v = n / 1_000;
+      const str = v % 1 === 0 ? `${v}` : v.toFixed(1);
+      return `${str.replace(/\.0$/, '')}K`;
+    }
+    return n.toString();
+  };
+
   const isCheckboxDisabled = (item) => {
     // If already selected, can always unselect
     if (selectedKeywords.includes(item.name)) {
@@ -439,7 +459,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
           {/* Level 1 (All Keywords) - No indent, no expand icon */}
           {level === 0 && (
             <div className="flex items-center gap-1 flex-1">
-              <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}" title={isCheckboxDisabled(item) ? 'Keyword limit reached, you can remove keywords to continue adding' : ''}`} onClick={() => handleToggle(item.id)}>
+              <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
                 <div className={`absolute inset-[12.5%] rounded-sm ${
                   checkboxState === 'on' 
                     ? 'bg-[#3e74fe] flex items-center justify-center' 
@@ -473,6 +493,45 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
               <span className={`text-sm font-dm-sans leading-[20px] ${isCheckboxDisabled(item) ? 'text-gray-400' : 'text-text-tertiary'}`}>
                 ({item.count})
               </span>
+              {(() => {
+                const leaves = getLeafKeywords(item);
+                const totalVol = leaves.reduce((sum,l)=> sum + extractVolume(l.name),0);
+                if(totalVol>0){
+                  return (
+                    <div className="relative ml-auto">
+                      <span 
+                        className="text-sm font-dm-sans leading-[20px] text-text-tertiary cursor-pointer hover:bg-gray-100 px-1 rounded peer"
+                        onMouseEnter={(e) => {
+                          const tooltip = e.target.nextElementSibling;
+                          if (tooltip) tooltip.style.display = 'block';
+                        }}
+                        onMouseLeave={(e) => {
+                          const tooltip = e.target.nextElementSibling;
+                          if (tooltip) tooltip.style.display = 'none';
+                        }}
+                      >
+                        {formatVolume(totalVol)}
+                      </span>
+                      <div className="absolute bottom-full right-0 mb-2 hidden whitespace-nowrap z-50">
+                        <div className="bg-[#092540] text-white text-xs font-dm-sans rounded py-2 pl-4 pr-2">
+                          Total search volume for all keywords
+                        </div>
+                        <div 
+                          className="absolute right-2"
+                          style={{
+                            width: 0,
+                            height: 0,
+                            borderLeft: '6px solid transparent',
+                            borderRight: '6px solid transparent',
+                            borderTop: '6px solid #092540',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
           )}
 
@@ -490,7 +549,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                 </svg>
               </div>
               <div className="flex items-center gap-1 flex-1">
-                <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}" title={isCheckboxDisabled(item) ? 'Keyword limit reached, you can remove keywords to continue adding' : ''}`} onClick={() => handleToggle(item.id)}>
+                <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
                   <div className={`absolute inset-[12.5%] rounded-sm ${
                     checkboxState === 'on' 
                       ? 'bg-[#3e74fe] flex items-center justify-center' 
@@ -510,12 +569,59 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                     )}
                   </div>
                 </div>
+                {isCheckboxDisabled(item) && (
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden peer-hover:block whitespace-nowrap z-50">
+                    <div className="bg-[#092540] text-white text-xs font-dm-sans rounded py-1 px-2">
+                      Keyword limit reached, you can remove keywords to continue adding
+                    </div>
+                    <div className="absolute left-1/2 transform -translate-x-1/2 top-full h-0 w-0 border-x-4 border-x-transparent border-t-4 border-t-[#092540]" />
+                  </div>
+                )}
                 <span className={`text-sm font-dm-sans leading-[20px] ${isCheckboxDisabled(item) ? 'text-gray-400' : 'text-text-primary'}`}>
                   {item.name}
                 </span>
                 <span className={`text-sm font-dm-sans leading-[20px] ${isCheckboxDisabled(item) ? 'text-gray-400' : 'text-text-tertiary'}`}>
                   ({item.count})
                 </span>
+                {(() => {
+                  const leaves = getLeafKeywords(item);
+                  const totalVol = leaves.reduce((sum,l)=> sum + extractVolume(l.name),0);
+                  if(totalVol>0){
+                    return (
+                      <div className="relative ml-auto">
+                        <span 
+                          className="text-sm font-dm-sans leading-[20px] text-text-tertiary cursor-pointer hover:bg-gray-100 px-1 rounded peer"
+                          onMouseEnter={(e) => {
+                            const tooltip = e.target.nextElementSibling;
+                            if (tooltip) tooltip.style.display = 'block';
+                          }}
+                          onMouseLeave={(e) => {
+                            const tooltip = e.target.nextElementSibling;
+                            if (tooltip) tooltip.style.display = 'none';
+                          }}
+                        >
+                          {formatVolume(totalVol)}
+                        </span>
+                        <div className="absolute bottom-full right-0 mb-2 hidden whitespace-nowrap z-50">
+                          <div className="bg-[#092540] text-white text-xs font-dm-sans rounded py-2 pl-4 pr-2">
+                            Total search volume for this group
+                          </div>
+                          <div 
+                            className="absolute right-2"
+                            style={{
+                              width: 0,
+                              height: 0,
+                              borderLeft: '6px solid transparent',
+                              borderRight: '6px solid transparent',
+                              borderTop: '6px solid #092540',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </>
           )}
@@ -535,7 +641,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                 ></div>
               </div>
               <div className="flex items-center gap-1 flex-1">
-                <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}" title={isCheckboxDisabled(item) ? 'Keyword limit reached, you can remove keywords to continue adding' : ''}`} onClick={() => handleToggle(item.id)}>
+                <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
                   <div className={`absolute inset-[12.5%] rounded-sm ${
                     checkboxState === 'on' 
                       ? 'bg-[#3e74fe] flex items-center justify-center' 
@@ -568,6 +674,11 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                   if (match) {
                     const keywordLabel = match[1].trim();
                     const rawVol = parseInt(match[2].replace(/,/g, ''), 10);
+                    const extractVolume = (name)=>{
+                      const m=name.match(/\((\d[\d,]*)\)$/);
+                      if(!m) return 0;
+                      return parseInt(m[1].replace(/,/g,''),10);
+                    };
                     const formatVolume = (n) => {
                       if (n >= 1_000_000) {
                         const v = n / 1_000_000;
