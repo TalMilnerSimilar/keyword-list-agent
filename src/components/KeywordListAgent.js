@@ -7,6 +7,7 @@ const KeywordListAgent = () => {
                 const [selectedKeywords, setSelectedKeywords] = useState([]);
   const [isCreateWithAI, setIsCreateWithAI] = useState(true);
   const [topic, setTopic] = useState('');
+  const [queryTags, setQueryTags] = useState([]); // added keyword tags
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false); // Left panel visibility
   const [generatedKeywords, setGeneratedKeywords] = useState([]); // Store generated keywords
@@ -207,6 +208,16 @@ const KeywordListAgent = () => {
       }
   };
 
+  const handleAddToQuery = (keyword) => {
+    setQueryTags(prev => {
+      if (prev.includes(keyword)) return prev;
+      return [...prev, keyword];
+    });
+    // focus AI tab and open panels
+    if (!isCreateWithAI) setIsCreateWithAI(true);
+    if (!isPanelOpen) setIsPanelOpen(true);
+  };
+
   return (
     <div className="flex h-screen bg-cover bg-center bg-no-repeat relative" 
          style={{ backgroundImage: "url('/dashboard-background.png')" }}>
@@ -252,6 +263,7 @@ const KeywordListAgent = () => {
                 selectedKeywords={selectedKeywords}
                 onKeywordToggle={handleKeywordToggle}
                 isLoadingKeywords={isLoadingKeywords}
+                onAddToQuery={handleAddToQuery}
               />
             </div>
           </div>
@@ -280,6 +292,8 @@ const KeywordListAgent = () => {
                          onSwitchToAI={handleSwitchToAI}
                          isLoadingKeywords={isLoadingKeywords}
                          apiError={apiError}
+                         queryTags={queryTags}
+                         setQueryTags={setQueryTags}
                          onGenerationComplete={() => {
                            // This will be called when generation is complete
                          }}

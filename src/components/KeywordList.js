@@ -183,21 +183,25 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
           count: keywords.length,
           isParent: true,
           isExpanded: true,
-          children: groupedKeywords.map((group, groupIndex) => ({
-            id: `group-${groupIndex}`,
-            name: group.name,
-            count: group.keywords.length,
-            isParent: true,
-            isExpanded: false,
-            children: group.keywords.map((keyword, keywordIndex) => ({
+          children: groupedKeywords.map((group, groupIndex) => {
+            const children = group.keywords.map((keyword, keywordIndex) => ({
               id: `group-${groupIndex}-keyword-${keywordIndex}`,
               name: keyword,
               count: 1,
               isParent: false,
               isExpanded: false,
               children: []
-            }))
-          }))
+            }));
+
+            return {
+              id: `group-${groupIndex}`,
+              name: group.name,
+              count: children.length,
+              isParent: true,
+              isExpanded: false,
+              children
+            };
+          })
         }
       ];
     } else if (keywords.length > 0) {
@@ -213,7 +217,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
             {
               id: 'product-types',
               name: 'Product Types',
-              count: Math.min(8, Math.max(0, keywords.length - 0)),
+              count: keywords.slice(0, Math.min(8, keywords.length)).length,
               isParent: true,
               isExpanded: false,
               children: keywords.slice(0, Math.min(8, keywords.length)).map((keyword, index) => ({
@@ -228,7 +232,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
             {
               id: 'features-benefits',
               name: 'Features & Benefits',
-              count: Math.min(8, Math.max(0, keywords.length - 8)),
+              count: keywords.slice(8, Math.min(16, keywords.length)).length,
               isParent: true,
               isExpanded: false,
               children: keywords.slice(8, Math.min(16, keywords.length)).map((keyword, index) => ({
@@ -243,7 +247,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
             {
               id: 'use-cases',
               name: 'Use Cases',
-              count: Math.min(8, Math.max(0, keywords.length - 16)),
+              count: keywords.slice(16, Math.min(24, keywords.length)).length,
               isParent: true,
               isExpanded: false,
               children: keywords.slice(16, Math.min(24, keywords.length)).map((keyword, index) => ({
@@ -258,7 +262,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
             {
               id: 'comparisons',
               name: 'Comparisons',
-              count: Math.min(8, Math.max(0, keywords.length - 24)),
+              count: keywords.slice(24, Math.min(32, keywords.length)).length,
               isParent: true,
               isExpanded: false,
               children: keywords.slice(24, Math.min(32, keywords.length)).map((keyword, index) => ({
@@ -273,7 +277,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
             {
               id: 'reviews-ratings',
               name: 'Reviews & Ratings',
-              count: Math.min(8, Math.max(0, keywords.length - 32)),
+              count: keywords.slice(32, Math.min(40, keywords.length)).length,
               isParent: true,
               isExpanded: false,
               children: keywords.slice(32, Math.min(40, keywords.length)).map((keyword, index) => ({
@@ -288,7 +292,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
             {
               id: 'shopping',
               name: 'Shopping',
-              count: Math.min(8, Math.max(0, keywords.length - 40)),
+              count: keywords.slice(40, Math.min(48, keywords.length)).length,
               isParent: true,
               isExpanded: false,
               children: keywords.slice(40, Math.min(48, keywords.length)).map((keyword, index) => ({
@@ -303,7 +307,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
             {
               id: 'technical',
               name: 'Technical',
-              count: Math.min(2, Math.max(0, keywords.length - 48)),
+              count: keywords.slice(48, Math.min(50, keywords.length)).length,
               isParent: true,
               isExpanded: false,
               children: keywords.slice(48, Math.min(50, keywords.length)).map((keyword, index) => ({
@@ -414,7 +418,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
     }
 
     return (
-      <div key={item.id} className="w-full">
+      <div key={item.id} className={`w-full relative ${level === 2 ? 'group' : ''}`}>
         <div className="flex items-center h-10 px-4">
           {/* Level 1 (All Keywords) - No indent, no expand icon */}
           {level === 0 && (
@@ -422,7 +426,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
               <div className={`w-6 h-6 relative ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
                 <div className={`absolute inset-[12.5%] rounded-sm ${
                   checkboxState === 'on' 
-                    ? 'flex items-center justify-center' 
+                    ? 'bg-[#3e74fe] flex items-center justify-center' 
                     : checkboxState === 'intermediate'
                     ? 'bg-[#3e74fe]'
                     : isCheckboxDisabled(item)
@@ -430,11 +434,9 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                     : 'border border-[#b6bec6]'
                 }`}>
                   {checkboxState === 'on' && (
-                    <img 
-                      alt="checkbox checked" 
-                      className="block max-w-none size-full" 
-                      src="http://localhost:3845/assets/a0b11800c990027b2da752dd2aa91f116834df6c.svg"
-                    />
+                    <svg viewBox="0 0 16 16" className="w-full h-full fill-current text-white">
+                      <path d="M6.173 12.067L2.4 8.293l1.414-1.414 2.36 2.36 6.014-6.014 1.414 1.414-7.028 7.028z" />
+                    </svg>
                   )}
                   {checkboxState === 'intermediate' && (
                     <div className="absolute bg-white bottom-[45.833%] left-[20.833%] right-[20.833%] rounded-[1px] top-[45.833%]"></div>
@@ -467,7 +469,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                 <div className={`w-6 h-6 relative ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
                   <div className={`absolute inset-[12.5%] rounded-sm ${
                     checkboxState === 'on' 
-                      ? 'flex items-center justify-center' 
+                      ? 'bg-[#3e74fe] flex items-center justify-center' 
                       : checkboxState === 'intermediate'
                       ? 'bg-[#3e74fe]'
                       : isCheckboxDisabled(item)
@@ -475,11 +477,9 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                       : 'border border-[#b6bec6]'
                   }`}>
                     {checkboxState === 'on' && (
-                      <img 
-                        alt="checkbox checked" 
-                        className="block max-w-none size-full" 
-                        src="http://localhost:3845/assets/a0b11800c990027b2da752dd2aa91f116834df6c.svg"
-                      />
+                      <svg viewBox="0 0 16 16" className="w-full h-full fill-current text-white">
+                        <path d="M6.173 12.067L2.4 8.293l1.414-1.414 2.36 2.36 6.014-6.014 1.414 1.414-7.028 7.028z" />
+                      </svg>
                     )}
                     {checkboxState === 'intermediate' && (
                       <div className="absolute bg-white bottom-[45.833%] left-[20.833%] right-[20.833%] rounded-[1px] top-[45.833%]"></div>
@@ -514,7 +514,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                 <div className={`w-6 h-6 relative ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
                   <div className={`absolute inset-[12.5%] rounded-sm ${
                     checkboxState === 'on' 
-                      ? 'flex items-center justify-center' 
+                      ? 'bg-[#3e74fe] flex items-center justify-center' 
                       : checkboxState === 'intermediate'
                       ? 'bg-[#3e74fe]'
                       : isCheckboxDisabled(item)
@@ -522,21 +522,76 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                       : 'border border-[#b6bec6]'
                   }`}>
                     {checkboxState === 'on' && (
-                      <img 
-                        alt="checkbox checked" 
-                        className="block max-w-none size-full" 
-                        src="http://localhost:3845/assets/a0b11800c990027b2da752dd2aa91f116834df6c.svg"
-                      />
+                      <svg viewBox="0 0 16 16" className="w-full h-full fill-current text-white">
+                        <path d="M6.173 12.067L2.4 8.293l1.414-1.414 2.36 2.36 6.014-6.014 1.414 1.414-7.028 7.028z" />
+                      </svg>
                     )}
                     {checkboxState === 'intermediate' && (
                       <div className="absolute bg-white bottom-[45.833%] left-[20.833%] right-[20.833%] rounded-[1px] top-[45.833%]"></div>
                     )}
                   </div>
                 </div>
-                <span className={`text-sm font-dm-sans leading-[20px] ${isCheckboxDisabled(item) ? 'text-gray-400' : 'text-text-primary'}`}>
-                  {item.name}
-                </span>
+                {(() => {
+                  const match = item.name.match(/^(.*)\s+\((\d+(?:,\d+)*)\)$/);
+                  if (match) {
+                    const keywordLabel = match[1].trim();
+                    const rawVol = parseInt(match[2].replace(/,/g, ''), 10);
+                    const formatVolume = (n) => {
+                      if (n >= 1_000_000) {
+                        const v = n / 1_000_000;
+                        const str = v % 1 === 0 ? `${v}` : v.toFixed(1);
+                        return `${str.replace(/\.0$/, '')}M`;
+                      }
+                      if (n >= 1_000) {
+                        const v = n / 1_000;
+                        const str = v % 1 === 0 ? `${v}` : v.toFixed(1);
+                        return `${str.replace(/\.0$/, '')}K`;
+                      }
+                      return n.toString();
+                    };
+                    const volume = formatVolume(rawVol);
+                    return (
+                      <>
+                        <span className={`text-sm font-dm-sans leading-[20px] ${isCheckboxDisabled(item) ? 'text-gray-400' : 'text-text-primary'}`}>{keywordLabel}</span>
+                        <div className="relative ml-auto">
+                          <span 
+                            className="text-sm font-dm-sans leading-[20px] text-text-tertiary cursor-pointer hover:bg-gray-100 px-1 rounded"
+                            onMouseEnter={(e) => {
+                              const tooltip = e.target.nextElementSibling;
+                              if (tooltip) tooltip.style.display = 'block';
+                            }}
+                            onMouseLeave={(e) => {
+                              const tooltip = e.target.nextElementSibling;
+                              if (tooltip) tooltip.style.display = 'none';
+                            }}
+                          >
+                            {volume}
+                          </span>
+                          <div className="absolute bottom-full right-0 mb-2 hidden whitespace-nowrap z-50">
+                            <div className="bg-[#092540] text-white text-xs font-dm-sans rounded py-2 pl-4 pr-2">
+                              Search volume of this keyword
+                            </div>
+                            <div 
+                              className="absolute right-2"
+                              style={{
+                                width: 0,
+                                height: 0,
+                                borderLeft: '6px solid transparent',
+                                borderRight: '6px solid transparent',
+                                borderTop: '6px solid #092540',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    );
+                  }
+                  return (
+                    <span className={`text-sm font-dm-sans leading-[20px] ${isCheckboxDisabled(item) ? 'text-gray-400' : 'text-text-primary'}`}>{item.name}</span>
+                  );
+                })()}
               </div>
+              {/* Hover action button removed as per request */}
             </>
           )}
         </div>
@@ -573,10 +628,10 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                     <div className="flex flex-col items-center gap-4">
                       <img src="loader.gif" alt="Loading" style={{ width: '200px', height: '200px' }} />
                       <div className="text-center">
-                        <h3 className="text-base font-bold font-dm-sans text-text-primary mb-2">
+                        <h3 className="text-base font-bold font-dm-sans text-[#092540] leading-[22px] mb-2">
                           Generating Keywords...
                         </h3>
-                        <p className="text-sm font-dm-sans text-text-secondary">
+                        <p className="text-xs font-dm-sans text-[#6b7c8c] leading-[16px] w-[280px]">
                           Please wait while we create your keyword suggestions.
                         </p>
                       </div>
