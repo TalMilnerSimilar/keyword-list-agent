@@ -9,7 +9,7 @@ const CreateButton = ({ topic, isLoading, hasGenerated, isDisabled, onClick }) =
     return "Create";
   };
 
-  const finalIsDisabled = isDisabled || isLoading || hasGenerated;
+  const finalIsDisabled = isDisabled || isLoading;
 
   const getButtonStyles = () => {
     if (finalIsDisabled) {

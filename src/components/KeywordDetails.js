@@ -99,7 +99,7 @@ const KeywordDetails = ({
   const setCurrentTopic = isCreateWithAI ? setAiTopic : setManualTopic;
 
   const handleGenerate = () => {
-    const canGenerate = (currentTopic.trim() || (includeSelectedKeywords && selectedKeywords.length > 0) || queryTags.length>0) && !isLoadingKeywords && !hasGenerated;
+    const canGenerate = (currentTopic.trim() || (includeSelectedKeywords && selectedKeywords.length > 0) || queryTags.length>0) && !isLoadingKeywords;
     if (canGenerate) {
         const userTopic = currentTopic.trim();
         const selectionTopic = includeSelectedKeywords && selectedKeywords.length > 0 ? selectedKeywords.join(', ') : '';
@@ -286,7 +286,6 @@ const KeywordDetails = ({
               <CreateButton
                 topic={currentTopic}
                 isLoading={isLoadingKeywords}
-                hasGenerated={hasGenerated}
                 isDisabled={!(currentTopic.trim() || (includeSelectedKeywords && selectedKeywords.length > 0) || queryTags.length>0)}
                 onClick={handleGenerate}
               />
