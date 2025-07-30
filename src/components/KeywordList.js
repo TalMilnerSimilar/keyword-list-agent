@@ -1,8 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 
 const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, onKeywordToggle, isLoadingKeywords = false }) => {
+  const wrapperRef = useRef(null);
   const containerRef = useRef(null);
   const contentRef = useRef(null);
+  const [maxHeight, setMaxHeight] = useState(null);
+
+  useLayoutEffect(() => {
+    const updateHeight = () => {
+      if (wrapperRef.current) {
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const available = window.innerHeight - 24; // 24px from bottom viewport
+        const calculated = available - rect.top;
+        setMaxHeight(calculated > 0 ? calculated : available);
+      }
+    };
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
 
   // Monitor size changes of the keyword list container
   useEffect(() => {
@@ -423,7 +439,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
           {/* Level 1 (All Keywords) - No indent, no expand icon */}
           {level === 0 && (
             <div className="flex items-center gap-1 flex-1">
-              <div className={`w-6 h-6 relative ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
+              <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}" title={isCheckboxDisabled(item) ? 'Keyword limit reached, you can remove keywords to continue adding' : ''}`} onClick={() => handleToggle(item.id)}>
                 <div className={`absolute inset-[12.5%] rounded-sm ${
                   checkboxState === 'on' 
                     ? 'bg-[#3e74fe] flex items-center justify-center' 
@@ -441,7 +457,15 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                   {checkboxState === 'intermediate' && (
                     <div className="absolute bg-white bottom-[45.833%] left-[20.833%] right-[20.833%] rounded-[1px] top-[45.833%]"></div>
                   )}
+                              </div>
+              {isCheckboxDisabled(item) && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden peer-hover:block whitespace-nowrap z-50">
+                  <div className="bg-[#092540] text-white text-xs font-dm-sans rounded py-1 px-2">
+                    Keyword limit reached, you can remove keywords to continue adding
+                  </div>
+                  <div className="absolute left-1/2 transform -translate-x-1/2 top-full h-0 w-0 border-x-4 border-x-transparent border-t-4 border-t-[#092540]"></div>
                 </div>
+              )}
               </div>
               <span className={`text-sm font-dm-sans leading-[20px] ${isCheckboxDisabled(item) ? 'text-gray-400' : 'text-text-primary'}`}>
                 {item.name}
@@ -466,7 +490,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                 </svg>
               </div>
               <div className="flex items-center gap-1 flex-1">
-                <div className={`w-6 h-6 relative ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
+                <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}" title={isCheckboxDisabled(item) ? 'Keyword limit reached, you can remove keywords to continue adding' : ''}`} onClick={() => handleToggle(item.id)}>
                   <div className={`absolute inset-[12.5%] rounded-sm ${
                     checkboxState === 'on' 
                       ? 'bg-[#3e74fe] flex items-center justify-center' 
@@ -511,7 +535,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                 ></div>
               </div>
               <div className="flex items-center gap-1 flex-1">
-                <div className={`w-6 h-6 relative ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => handleToggle(item.id)}>
+                <div className={`w-6 h-6 relative peer ${isCheckboxDisabled(item) ? 'cursor-not-allowed' : 'cursor-pointer'}" title={isCheckboxDisabled(item) ? 'Keyword limit reached, you can remove keywords to continue adding' : ''}`} onClick={() => handleToggle(item.id)}>
                   <div className={`absolute inset-[12.5%] rounded-sm ${
                     checkboxState === 'on' 
                       ? 'bg-[#3e74fe] flex items-center justify-center' 
@@ -529,7 +553,15 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                     {checkboxState === 'intermediate' && (
                       <div className="absolute bg-white bottom-[45.833%] left-[20.833%] right-[20.833%] rounded-[1px] top-[45.833%]"></div>
                     )}
+                                  </div>
+                {isCheckboxDisabled(item) && (
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden peer-hover:block whitespace-nowrap z-50">
+                    <div className="bg-[#092540] text-white text-xs font-dm-sans rounded py-1 px-2">
+                      Keyword limit reached, you can remove keywords to continue adding
+                    </div>
+                    <div className="absolute left-1/2 transform -translate-x-1/2 top-full h-0 w-0 border-x-4 border-x-transparent border-t-4 border-t-[#092540]"></div>
                   </div>
+                )}
                 </div>
                 {(() => {
                   const match = item.name.match(/^(.*)\s+\((\d+(?:,\d+)*)\)$/);
@@ -613,38 +645,41 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
   };
 
   return (
-    <div 
-      className="relative flex-1 rounded-lg p-[1px] bg-gradient-to-r from-blue-400 to-green-400" 
-      style={{ marginBottom: '24px' }}
-    >
-        <div
-          ref={containerRef}
-          className="flex flex-col bg-white rounded-lg relative h-full w-full"
-          style={{ overflow: 'hidden' }}
-        >
-            <div ref={contentRef} className="overflow-y-auto px-0 py-4 flex-1">
-                {isLoadingKeywords ? (
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <div className="flex flex-col items-center gap-4">
-                      <img src="loader.gif" alt="Loading" style={{ width: '200px', height: '200px' }} />
-                      <div className="text-center">
-                        <h3 className="text-base font-bold font-dm-sans text-[#092540] leading-[22px] mb-2">
-                          Generating Keywords...
-                        </h3>
-                        <p className="text-xs font-dm-sans text-[#6b7c8c] leading-[16px] w-[280px]">
-                          Please wait while we create your keyword suggestions.
-                        </p>
+    <>
+             <div 
+         ref={wrapperRef}
+         className="relative flex-1 rounded-lg p-[1px] bg-gradient-to-r from-blue-400 to-green-400" style={{ maxHeight: maxHeight ? `${maxHeight}px` : 'auto' }}
+      >
+          <div
+            ref={containerRef}
+            className="flex flex-col bg-white rounded-lg relative h-full w-full"
+            style={{ overflow: 'hidden', maxHeight: maxHeight ? `${maxHeight}px` : 'auto' }}
+          >
+              <div ref={contentRef} className="overflow-y-auto px-0 pt-4 pb-6 flex-1">
+                  {isLoadingKeywords ? (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <div className="flex flex-col items-center gap-4">
+                        <img src="loader.gif" alt="Loading" style={{ width: '200px', height: '200px' }} />
+                        <div className="text-center">
+                          <h3 className="text-base font-bold font-dm-sans text-[#092540] leading-[22px] mb-2">
+                            Generating Keywords...
+                          </h3>
+                          <p className="text-xs font-dm-sans text-[#6b7c8c] leading-[16px] w-[280px]">
+                            Please wait while we create your keyword suggestions.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="w-full">
-                      {keywordData.map((item) => renderKeywordItem(item))}
-                  </div>
-                )}
-            </div>
-        </div>
-    </div>
+                  ) : (
+                    <div className="w-full">
+                        {keywordData.map((item) => renderKeywordItem(item))}
+                    </div>
+                  )}
+              </div>
+          </div>
+      </div>
+
+    </>
   );
 };
 
