@@ -19,7 +19,8 @@ const KeywordDetails = ({
   apiError,
   onGenerationComplete,
   queryTags = [],
-  setQueryTags
+  setQueryTags,
+  selectedOption = 1
 }) => {
   const [isHovering, setIsHovering] = useState(false);
   const [listName, setListName] = useState("New List");
@@ -221,7 +222,7 @@ const KeywordDetails = ({
         </div>
 
         {/* Input Section */}
-        {isCreateWithAI ? (
+        {isCreateWithAI && selectedOption !== 2 && selectedOption !== 3 && selectedOption !== 4 ? (
           <div className="flex flex-col gap-2">
             <p className="text-sm font-dm-sans text-text-secondary">
               Enter your topic, then click Create to generate your list.
@@ -357,7 +358,7 @@ const KeywordDetails = ({
               </div>
             )}
           </div>
-        ) : (
+        ) : (!isCreateWithAI && (selectedOption === 1 || selectedOption === 2 || selectedOption === 3 || selectedOption === 5)) ? (
           <div className="flex flex-col gap-2">
             <p className="text-sm font-dm-sans text-text-secondary">
               Type or paste keywords, then click Add
@@ -423,7 +424,7 @@ const KeywordDetails = ({
               Tip: You can add multiple keywords at once, separated by commas
             </p>
           </div>
-        )}
+        ) : null}
 
         {/* Selected Keywords */}
         <div className="flex-1 flex flex-col gap-4 overflow-hidden">

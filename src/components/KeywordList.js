@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 
-const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, onKeywordToggle, isLoadingKeywords = false }) => {
+const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, onKeywordToggle, isLoadingKeywords = false, selectedOption = 1 }) => {
   const wrapperRef = useRef(null);
   const containerRef = useRef(null);
   const contentRef = useRef(null);
@@ -759,18 +759,18 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
     <>
              <div 
          ref={wrapperRef}
-         className="relative flex-1 rounded-lg p-[1px] bg-gradient-to-r from-blue-400 to-green-400" style={{ maxHeight: maxHeight ? `${maxHeight}px` : 'auto' }}
+         className={`relative flex-1 rounded-lg p-[1px] bg-gradient-to-r from-blue-400 to-green-400 ${(selectedOption === 5 || selectedOption === 6) ? 'h-full' : ''}`} style={{ maxHeight: (selectedOption === 5 || selectedOption === 6) ? 'none' : (maxHeight ? `${maxHeight}px` : 'auto') }}
       >
           <div
             ref={containerRef}
-            className="flex flex-col bg-white rounded-lg relative h-full w-full"
-            style={{ overflow: 'hidden', maxHeight: maxHeight ? `${maxHeight}px` : 'auto' }}
+            className={`flex flex-col rounded-lg relative h-full w-full ${selectedOption === 4 ? 'bg-background-secondary' : 'bg-white'}`}
+            style={{ overflow: 'hidden', maxHeight: (selectedOption === 5 || selectedOption === 6) ? 'none' : (maxHeight ? `${maxHeight}px` : 'auto') }}
           >
               <div ref={contentRef} className="overflow-y-auto px-0 pt-4 pb-6 flex-1">
                   {isLoadingKeywords ? (
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className="flex flex-col items-center gap-4">
-                        <img src="loader.gif" alt="Loading" style={{ width: '200px', height: '200px' }} />
+                        <img src="ai loader.gif" alt="Loading" style={{ width: '200px', height: '200px' }} />
                         <div className="text-center">
                           <h3 className="text-base font-bold font-dm-sans text-[#092540] leading-[22px] mb-2">
                             Generating Keywords...
@@ -778,6 +778,22 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                           <p className="text-xs font-dm-sans text-[#6b7c8c] leading-[16px] w-[280px]">
                             Please wait while we create your keyword suggestions.
                           </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : keywords.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full gap-2">
+                      <div className="text-center mb-2">
+                        <p className="text-base font-bold font-dm-sans text-[#092540] leading-[22px] mb-2">No keywords yet</p>
+                        <p className="text-xs font-dm-sans text-[#6b7c8c] leading-[16px] w-[280px]">Enter a topic above to generate keyword suggestions</p>
+                      </div>
+                      <div className="flex flex-col items-center justify-center h-[232px] w-[404px] px-0 py-2.5">
+                        <div className="h-[232px] w-[404px] relative">
+                          <img 
+                            src="/empty state.png" 
+                            alt="Empty state illustration"
+                            className="w-full h-full object-contain"
+                          />
                         </div>
                       </div>
                     </div>
