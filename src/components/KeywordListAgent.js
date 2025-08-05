@@ -4,6 +4,95 @@ import KeywordDetails from './KeywordDetails';
 import CreateButton from './CreateButton';
 import apiService from '../services/api';
 
+// Dynamic Keyword Display Component
+const DynamicKeywordDisplay = ({ selectedKeywords }) => {
+  const [visibleCount, setVisibleCount] = useState(selectedKeywords.length);
+  const containerRef = useRef(null);
+  
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const measureFit = () => {
+      const container = containerRef.current;
+      if (!container) return;
+      
+      const containerWidth = container.offsetWidth;
+      let fitCount = 0;
+      
+      // Create temporary measuring element
+      const tempContainer = document.createElement('div');
+      tempContainer.style.visibility = 'hidden';
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.display = 'flex';
+      tempContainer.style.gap = '4px';
+      tempContainer.style.fontSize = '12px';
+      tempContainer.style.fontFamily = 'DM Sans';
+      document.body.appendChild(tempContainer);
+      
+      try {
+        for (let i = 0; i < selectedKeywords.length; i++) {
+          const span = document.createElement('span');
+          span.style.cssText = 'background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb; white-space: nowrap; flex-shrink: 0;';
+          span.textContent = selectedKeywords[i].replace(/\s+\(\d+(?:,\d+)*\)$/, '');
+          tempContainer.appendChild(span);
+          
+          let currentWidth = tempContainer.offsetWidth;
+          
+          // If not the last item, test with "+X More Keywords"
+          if (i < selectedKeywords.length - 1) {
+            const moreSpan = document.createElement('span');
+            moreSpan.style.cssText = 'background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb; white-space: nowrap; flex-shrink: 0; color: #6b7280;';
+            moreSpan.textContent = `+${selectedKeywords.length - i - 1} More Keywords`;
+            tempContainer.appendChild(moreSpan);
+            
+            const withMoreWidth = tempContainer.offsetWidth;
+            tempContainer.removeChild(moreSpan);
+            
+            if (withMoreWidth > containerWidth) {
+              break;
+            }
+          }
+          
+          if (currentWidth > containerWidth) {
+            break;
+          }
+          
+          fitCount = i + 1;
+        }
+      } finally {
+        document.body.removeChild(tempContainer);
+      }
+      
+      setVisibleCount(Math.max(1, fitCount)); // At least show 1 keyword
+    };
+    
+    // Initial measurement
+    setTimeout(measureFit, 0);
+    
+    const handleResize = () => measureFit();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [selectedKeywords]);
+  
+  const visibleKeywords = selectedKeywords.slice(0, visibleCount);
+  const hiddenCount = selectedKeywords.length - visibleCount;
+  
+  return (
+    <div className="flex gap-1 overflow-hidden" ref={containerRef}>
+      {visibleKeywords.map((keyword, index) => (
+        <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
+          {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
+        </span>
+      ))}
+      {hiddenCount > 0 && (
+        <span className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-secondary border whitespace-nowrap flex-shrink-0">
+          +{hiddenCount} More Keywords
+        </span>
+      )}
+    </div>
+  );
+};
+
 // Figma Toggle Component with all states
 const FigmaToggle = ({ isOn, isDisabled, onClick }) => {
   const [isHover, setIsHover] = useState(false);
@@ -1450,93 +1539,7 @@ const KeywordListAgent = () => {
                               <p className="text-sm font-dm-sans text-text-secondary mb-2">
                                 {selectedKeywords.length} keywords selected for your list
                               </p>
-                              {(() => {
-                                const [visibleCount, setVisibleCount] = React.useState(selectedKeywords.length);
-                                const containerRef = React.useRef(null);
-                                
-                                React.useEffect(() => {
-                                  if (!containerRef.current) return;
-                                  
-                                  const measureFit = () => {
-                                    const container = containerRef.current;
-                                    if (!container) return;
-                                    
-                                    const containerWidth = container.offsetWidth;
-                                    let fitCount = 0;
-                                    
-                                    // Create temporary measuring element
-                                    const tempContainer = document.createElement('div');
-                                    tempContainer.style.visibility = 'hidden';
-                                    tempContainer.style.position = 'absolute';
-                                    tempContainer.style.display = 'flex';
-                                    tempContainer.style.gap = '4px';
-                                    tempContainer.style.fontSize = '12px';
-                                    tempContainer.style.fontFamily = 'DM Sans';
-                                    document.body.appendChild(tempContainer);
-                                    
-                                    try {
-                                      for (let i = 0; i < selectedKeywords.length; i++) {
-                                        const span = document.createElement('span');
-                                        span.style.cssText = 'background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb; white-space: nowrap; flex-shrink: 0;';
-                                        span.textContent = selectedKeywords[i].replace(/\s+\(\d+(?:,\d+)*\)$/, '');
-                                        tempContainer.appendChild(span);
-                                        
-                                        let currentWidth = tempContainer.offsetWidth;
-                                        
-                                        // If not the last item, test with "+X More Keywords"
-                                        if (i < selectedKeywords.length - 1) {
-                                          const moreSpan = document.createElement('span');
-                                          moreSpan.style.cssText = 'background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb; white-space: nowrap; flex-shrink: 0; color: #6b7280;';
-                                          moreSpan.textContent = `+${selectedKeywords.length - i - 1} More Keywords`;
-                                          tempContainer.appendChild(moreSpan);
-                                          
-                                          const withMoreWidth = tempContainer.offsetWidth;
-                                          tempContainer.removeChild(moreSpan);
-                                          
-                                          if (withMoreWidth > containerWidth) {
-                                            break;
-                                          }
-                                        }
-                                        
-                                        if (currentWidth > containerWidth) {
-                                          break;
-                                        }
-                                        
-                                        fitCount = i + 1;
-                                      }
-                                    } finally {
-                                      document.body.removeChild(tempContainer);
-                                    }
-                                    
-                                    setVisibleCount(Math.max(1, fitCount)); // At least show 1 keyword
-                                  };
-                                  
-                                  // Initial measurement
-                                  setTimeout(measureFit, 0);
-                                  
-                                  const handleResize = () => measureFit();
-                                  window.addEventListener('resize', handleResize);
-                                  return () => window.removeEventListener('resize', handleResize);
-                                }, [selectedKeywords]);
-                                
-                                const visibleKeywords = selectedKeywords.slice(0, visibleCount);
-                                const hiddenCount = selectedKeywords.length - visibleCount;
-                                
-                                return (
-                                  <div className="flex gap-1 overflow-hidden" ref={containerRef}>
-                                    {visibleKeywords.map((keyword, index) => (
-                                      <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
-                                        {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
-                                      </span>
-                                    ))}
-                                    {hiddenCount > 0 && (
-                                      <span className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-secondary border whitespace-nowrap flex-shrink-0">
-                                        +{hiddenCount} More Keywords
-                                      </span>
-                                    )}
-                                  </div>
-                                );
-                              })()}
+                              <DynamicKeywordDisplay selectedKeywords={selectedKeywords} />
                             </div>
                           )}
 
@@ -2069,93 +2072,7 @@ const KeywordListAgent = () => {
                         <p className="text-sm font-dm-sans text-text-secondary mb-2">
                           {selectedKeywords.length} keywords selected for your list
                         </p>
-                        {(() => {
-                          const [visibleCount, setVisibleCount] = React.useState(selectedKeywords.length);
-                          const containerRef = React.useRef(null);
-                          
-                          React.useEffect(() => {
-                            if (!containerRef.current) return;
-                            
-                            const measureFit = () => {
-                              const container = containerRef.current;
-                              if (!container) return;
-                              
-                              const containerWidth = container.offsetWidth;
-                              let fitCount = 0;
-                              
-                              // Create temporary measuring element
-                              const tempContainer = document.createElement('div');
-                              tempContainer.style.visibility = 'hidden';
-                              tempContainer.style.position = 'absolute';
-                              tempContainer.style.display = 'flex';
-                              tempContainer.style.gap = '4px';
-                              tempContainer.style.fontSize = '12px';
-                              tempContainer.style.fontFamily = 'DM Sans';
-                              document.body.appendChild(tempContainer);
-                              
-                              try {
-                                for (let i = 0; i < selectedKeywords.length; i++) {
-                                  const span = document.createElement('span');
-                                  span.style.cssText = 'background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb; white-space: nowrap; flex-shrink: 0;';
-                                  span.textContent = selectedKeywords[i].replace(/\s+\(\d+(?:,\d+)*\)$/, '');
-                                  tempContainer.appendChild(span);
-                                  
-                                  let currentWidth = tempContainer.offsetWidth;
-                                  
-                                  // If not the last item, test with "+X More Keywords"
-                                  if (i < selectedKeywords.length - 1) {
-                                    const moreSpan = document.createElement('span');
-                                    moreSpan.style.cssText = 'background: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb; white-space: nowrap; flex-shrink: 0; color: #6b7280;';
-                                    moreSpan.textContent = `+${selectedKeywords.length - i - 1} More Keywords`;
-                                    tempContainer.appendChild(moreSpan);
-                                    
-                                    const withMoreWidth = tempContainer.offsetWidth;
-                                    tempContainer.removeChild(moreSpan);
-                                    
-                                    if (withMoreWidth > containerWidth) {
-                                      break;
-                                    }
-                                  }
-                                  
-                                  if (currentWidth > containerWidth) {
-                                    break;
-                                  }
-                                  
-                                  fitCount = i + 1;
-                                }
-                              } finally {
-                                document.body.removeChild(tempContainer);
-                              }
-                              
-                              setVisibleCount(Math.max(1, fitCount)); // At least show 1 keyword
-                            };
-                            
-                            // Initial measurement
-                            setTimeout(measureFit, 0);
-                            
-                            const handleResize = () => measureFit();
-                            window.addEventListener('resize', handleResize);
-                            return () => window.removeEventListener('resize', handleResize);
-                          }, [selectedKeywords]);
-                          
-                          const visibleKeywords = selectedKeywords.slice(0, visibleCount);
-                          const hiddenCount = selectedKeywords.length - visibleCount;
-                          
-                          return (
-                            <div className="flex gap-1 overflow-hidden" ref={containerRef}>
-                              {visibleKeywords.map((keyword, index) => (
-                                <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
-                                  {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
-                                </span>
-                              ))}
-                              {hiddenCount > 0 && (
-                                <span className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-secondary border whitespace-nowrap flex-shrink-0">
-                                  +{hiddenCount} More Keywords
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })()}
+                        <DynamicKeywordDisplay selectedKeywords={selectedKeywords} />
                       </div>
                     ) : (
                       <div className="bg-[#f7f7f8] rounded border border-[#e6e9ec] p-4 h-[100px] flex flex-col items-center justify-center text-center">
