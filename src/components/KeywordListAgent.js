@@ -2023,7 +2023,9 @@ const KeywordListAgent = () => {
                           </div>
                         )}
                       </div>
-                      <span className="text-sm font-dm-sans leading-[20px] text-[#b6bec6]">
+                      <span className={`text-sm font-dm-sans leading-[20px] ${
+                        selectedKeywords.length > 0 ? 'text-[#092540]' : 'text-[#b6bec6]'
+                      }`}>
                         Include your Selected Keywords in your topic
                       </span>
                     </div>
