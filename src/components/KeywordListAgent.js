@@ -1450,16 +1450,28 @@ const KeywordListAgent = () => {
                               <p className="text-sm font-dm-sans text-text-secondary mb-2">
                                 {selectedKeywords.length} keywords selected for your list
                               </p>
-                              <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: '2.5em' }}>
-                                {selectedKeywords.map((keyword, index) => (
-                                  <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
-                                    {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
-                                  </span>
-                                ))}
-                              </div>
-                              {/* Show +X more using CSS to detect overflow */}
-                              <div className="mt-1 text-xs font-dm-sans text-text-secondary" style={{ display: selectedKeywords.length > 6 ? 'block' : 'none' }}>
-                                +{Math.max(0, selectedKeywords.length - 6)} more keywords
+                              <div className="flex gap-1 overflow-hidden">
+                                {(() => {
+                                  // Show keywords that can fit, estimate based on average keyword length
+                                  const maxVisibleKeywords = Math.min(selectedKeywords.length, 5);
+                                  const visibleKeywords = selectedKeywords.slice(0, maxVisibleKeywords);
+                                  const hiddenCount = selectedKeywords.length - maxVisibleKeywords;
+                                  
+                                  return (
+                                    <>
+                                      {visibleKeywords.map((keyword, index) => (
+                                        <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
+                                          {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
+                                        </span>
+                                      ))}
+                                      {hiddenCount > 0 && (
+                                        <span className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-secondary border whitespace-nowrap flex-shrink-0">
+                                          +{hiddenCount} More Keywords
+                                        </span>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </div>
                           )}
@@ -1993,19 +2005,29 @@ const KeywordListAgent = () => {
                         <p className="text-sm font-dm-sans text-text-secondary mb-2">
                           {selectedKeywords.length} keywords selected for your list
                         </p>
-                        <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: '2.5em' }}>
-                          {selectedKeywords.map((keyword, index) => (
-                            <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
-                              {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
-                            </span>
-                          ))}
+                        <div className="flex gap-1 overflow-hidden">
+                          {(() => {
+                            // Show keywords that can fit, estimate based on average keyword length
+                            const maxVisibleKeywords = Math.min(selectedKeywords.length, 5);
+                            const visibleKeywords = selectedKeywords.slice(0, maxVisibleKeywords);
+                            const hiddenCount = selectedKeywords.length - maxVisibleKeywords;
+                            
+                            return (
+                              <>
+                                {visibleKeywords.map((keyword, index) => (
+                                  <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
+                                    {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
+                                  </span>
+                                ))}
+                                {hiddenCount > 0 && (
+                                  <span className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-secondary border whitespace-nowrap flex-shrink-0">
+                                    +{hiddenCount} More Keywords
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
-                        {/* Show +X more using CSS to detect overflow */}
-                        {selectedKeywords.length > 6 && (
-                          <div className="mt-1 text-xs font-dm-sans text-text-secondary">
-                            +{Math.max(0, selectedKeywords.length - 6)} more keywords
-                          </div>
-                        )}
                       </div>
                     ) : (
                       <div className="bg-[#f7f7f8] rounded border border-[#e6e9ec] p-4 h-[100px] flex flex-col items-center justify-center text-center">
