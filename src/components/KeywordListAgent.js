@@ -1514,8 +1514,24 @@ const KeywordListAgent = () => {
                         <div className="flex flex-col gap-2 flex-shrink-0">
                           <div className="flex items-center justify-between">
                             <h3 className="text-base font-bold font-dm-sans text-text-primary">
-                              Selected Keywords ({selectedKeywords.length})
+                              Selected Keywords
                             </h3>
+                            <span className={`text-sm font-dm-sans ${selectedKeywords.length >= 50 ? 'text-red-500' : 'text-text-primary'}`}>
+                              {selectedKeywords.length} / 50
+                            </span>
+                          </div>
+                          
+                          {/* Keyword limit warning */}
+                          {selectedKeywords.length >= 50 && (
+                            <div className="flex items-center justify-between -mt-1">
+                              <span className="text-xs text-text-secondary">
+                                Keyword limit reached, you can remove keywords below to continue adding.
+                              </span>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center justify-between">
+                            <div></div>
                             <button
                               onClick={() => {
                                 if (isSelectedKeywordsExpanded) {
@@ -1581,15 +1597,29 @@ const KeywordListAgent = () => {
                         <div className="flex flex-col gap-2 flex-1 overflow-hidden">
                           <div className="flex items-center justify-between">
                             <h3 className="text-base font-bold font-dm-sans text-text-primary">
-                              Selected Keywords ({selectedKeywords.length})
+                              Selected Keywords
                             </h3>
-                            <button
-                              onClick={handleClearAll}
-                              className="text-sm font-dm-sans text-red-500 hover:text-red-700 transition-colors"
-                            >
-                              Clear All
-                            </button>
+                            <div className="flex items-center gap-4">
+                              <span className={`text-sm font-dm-sans ${selectedKeywords.length >= 50 ? 'text-red-500' : 'text-text-primary'}`}>
+                                {selectedKeywords.length} / 50
+                              </span>
+                              <button
+                                onClick={handleClearAll}
+                                className="text-sm font-dm-sans text-red-500 hover:text-red-700 transition-colors"
+                              >
+                                Clear All
+                              </button>
+                            </div>
                           </div>
+                          
+                          {/* Keyword limit warning */}
+                          {selectedKeywords.length >= 50 && (
+                            <div className="flex items-center justify-between -mt-1">
+                              <span className="text-xs text-text-secondary">
+                                Keyword limit reached, you can remove keywords below to continue adding.
+                              </span>
+                            </div>
+                          )}
                           <div className="bg-background-secondary rounded-lg relative flex-1 overflow-y-auto">
                             <div className="p-3">
                               <div className="flex flex-wrap gap-2">
@@ -1738,9 +1768,19 @@ const KeywordListAgent = () => {
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' && manualInput.trim()) {
                                     const keywords = manualInput.split(',').map(k => k.trim()).filter(k => k);
+                                    const currentSelectedCount = selectedKeywords.length;
+                                    const availableSlots = 50 - currentSelectedCount;
+                                    
+                                    if (availableSlots <= 0) {
+                                      // Already at limit, can't add more
+                                      return;
+                                    }
+                                    
+                                    let addedCount = 0;
                                     keywords.forEach(keyword => {
-                                      if (!selectedKeywords.includes(keyword)) {
+                                      if (!selectedKeywords.includes(keyword) && addedCount < availableSlots) {
                                         setSelectedKeywords(prev => [...prev, keyword]);
+                                        addedCount++;
                                       }
                                     });
                                     setManualInput('');
@@ -1754,9 +1794,19 @@ const KeywordListAgent = () => {
                           onClick={() => {
                             if (manualInput.trim()) {
                               const keywords = manualInput.split(',').map(k => k.trim()).filter(k => k);
+                              const currentSelectedCount = selectedKeywords.length;
+                              const availableSlots = 50 - currentSelectedCount;
+                              
+                              if (availableSlots <= 0) {
+                                // Already at limit, can't add more
+                                return;
+                              }
+                              
+                              let addedCount = 0;
                               keywords.forEach(keyword => {
-                                if (!selectedKeywords.includes(keyword)) {
+                                if (!selectedKeywords.includes(keyword) && addedCount < availableSlots) {
                                   setSelectedKeywords(prev => [...prev, keyword]);
+                                  addedCount++;
                                 }
                               });
                               setManualInput('');
@@ -1780,15 +1830,29 @@ const KeywordListAgent = () => {
                     <div className="flex flex-col gap-2 flex-1 overflow-hidden">
                       <div className="flex items-center justify-between">
                         <h3 className="text-base font-bold font-dm-sans text-text-primary">
-                          Selected Keywords ({selectedKeywords.length})
+                          Selected Keywords
                         </h3>
-                        <button
-                          onClick={handleClearAll}
-                          className="text-sm font-dm-sans text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          Clear All
-                        </button>
+                        <div className="flex items-center gap-4">
+                          <span className={`text-sm font-dm-sans ${selectedKeywords.length >= 50 ? 'text-red-500' : 'text-text-primary'}`}>
+                            {selectedKeywords.length} / 50
+                          </span>
+                          <button
+                            onClick={handleClearAll}
+                            className="text-sm font-dm-sans text-red-500 hover:text-red-700 transition-colors"
+                          >
+                            Clear All
+                          </button>
+                        </div>
                       </div>
+                      
+                      {/* Keyword limit warning */}
+                      {selectedKeywords.length >= 50 && (
+                        <div className="flex items-center justify-between -mt-1">
+                          <span className="text-xs text-text-secondary">
+                            Keyword limit reached, you can remove keywords below to continue adding.
+                          </span>
+                        </div>
+                      )}
                       <div className="bg-background-secondary rounded-lg relative flex-1 overflow-y-auto">
                         <div className="p-3">
                           <div className="flex flex-wrap gap-2">
@@ -2055,9 +2119,14 @@ const KeywordListAgent = () => {
                   {/* Selected Keywords - Custom Minimized View for Option 6 */}
                   <div className="flex flex-col gap-2 flex-shrink-0">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-bold font-dm-sans text-text-primary">
-                        Selected Keywords ({selectedKeywords.length})
-                      </h3>
+                      <div className="flex items-center gap-4">
+                        <h3 className="text-base font-bold font-dm-sans text-text-primary">
+                          Selected Keywords
+                        </h3>
+                        <span className={`text-sm font-dm-sans ${selectedKeywords.length >= 50 ? 'text-red-500' : 'text-text-primary'}`}>
+                          {selectedKeywords.length} / 50
+                        </span>
+                      </div>
                       <button
                         onClick={() => setIsFocusMode(true)}
                         className="flex items-center gap-1 text-sm font-dm-sans text-primary-blue hover:text-primary-dark transition-colors"
@@ -2068,6 +2137,15 @@ const KeywordListAgent = () => {
                         </svg>
                       </button>
                     </div>
+                    
+                    {/* Keyword limit warning */}
+                    {selectedKeywords.length >= 50 && (
+                      <div className="flex items-center justify-between -mt-1">
+                        <span className="text-xs text-text-secondary">
+                          Keyword limit reached, you can remove keywords below to continue adding.
+                        </span>
+                      </div>
+                    )}
 
                     {selectedKeywords.length > 0 ? (
                       <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-4 border border-blue-200 h-[100px] flex flex-col justify-center">
