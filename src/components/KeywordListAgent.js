@@ -1552,8 +1552,11 @@ const KeywordListAgent = () => {
                           {/* AI Mode - Summarized View (Default) */}
                           {!isSelectedKeywordsExpanded && (
                             <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-3 border border-blue-200">
-                              <p className="text-sm font-dm-sans text-text-secondary mb-2">
-                                {selectedKeywords.length} of 50 keywords selected {selectedKeywords.length >= 50 ? '(limit reached - remove keywords to add more)' : '(remove keywords to add different ones)'}
+                              <p className="text-sm font-dm-sans mb-2">
+                                <span className="text-text-secondary">{selectedKeywords.length} of 50 keywords selected</span>
+                                {selectedKeywords.length >= 50 ? (
+                                  <span className="text-red-500 font-medium"> - limit reached, remove keywords to add more</span>
+                                ) : null}
                               </p>
                               <DynamicKeywordDisplay selectedKeywords={selectedKeywords} />
                             </div>
@@ -2149,8 +2152,11 @@ const KeywordListAgent = () => {
 
                     {selectedKeywords.length > 0 ? (
                       <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-4 border border-blue-200 h-[100px] flex flex-col justify-center">
-                        <p className="text-sm font-dm-sans text-text-secondary mb-2">
-                          {selectedKeywords.length} of 50 keywords selected {selectedKeywords.length >= 50 ? '(limit reached - remove keywords to add more)' : '(remove keywords to add different ones)'}
+                        <p className="text-sm font-dm-sans mb-2">
+                          <span className="text-text-secondary">{selectedKeywords.length} of 50 keywords selected</span>
+                          {selectedKeywords.length >= 50 ? (
+                            <span className="text-red-500 font-medium"> - limit reached, remove keywords to add more</span>
+                          ) : null}
                         </p>
                         <DynamicKeywordDisplay selectedKeywords={selectedKeywords} />
                       </div>
