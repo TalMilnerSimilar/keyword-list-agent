@@ -1450,17 +1450,16 @@ const KeywordListAgent = () => {
                               <p className="text-sm font-dm-sans text-text-secondary mb-2">
                                 {selectedKeywords.length} keywords selected for your list
                               </p>
-                              <div className="flex flex-wrap gap-1">
-                                {selectedKeywords.slice(0, 3).map((keyword, index) => (
-                                  <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border">
+                              <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: '2.5em' }}>
+                                {selectedKeywords.map((keyword, index) => (
+                                  <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
                                     {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
                                   </span>
                                 ))}
-                                {selectedKeywords.length > 3 && (
-                                  <span className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-secondary border">
-                                    +{selectedKeywords.length - 3} more
-                                  </span>
-                                )}
+                              </div>
+                              {/* Show +X more using CSS to detect overflow */}
+                              <div className="mt-1 text-xs font-dm-sans text-text-secondary" style={{ display: selectedKeywords.length > 6 ? 'block' : 'none' }}>
+                                +{Math.max(0, selectedKeywords.length - 6)} more keywords
                               </div>
                             </div>
                           )}
@@ -1994,18 +1993,19 @@ const KeywordListAgent = () => {
                         <p className="text-sm font-dm-sans text-text-secondary mb-2">
                           {selectedKeywords.length} keywords selected for your list
                         </p>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedKeywords.slice(0, 3).map((keyword, index) => (
-                            <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border">
+                        <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: '2.5em' }}>
+                          {selectedKeywords.map((keyword, index) => (
+                            <span key={index} className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-primary border whitespace-nowrap flex-shrink-0">
                               {keyword.replace(/\s+\(\d+(?:,\d+)*\)$/, '')}
                             </span>
                           ))}
-                          {selectedKeywords.length > 3 && (
-                            <span className="bg-white px-2 py-1 rounded text-xs font-dm-sans text-text-secondary border">
-                              +{selectedKeywords.length - 3} more
-                            </span>
-                          )}
                         </div>
+                        {/* Show +X more using CSS to detect overflow */}
+                        {selectedKeywords.length > 6 && (
+                          <div className="mt-1 text-xs font-dm-sans text-text-secondary">
+                            +{Math.max(0, selectedKeywords.length - 6)} more keywords
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="bg-[#f7f7f8] rounded border border-[#e6e9ec] p-4 h-[100px] flex flex-col items-center justify-center text-center">
