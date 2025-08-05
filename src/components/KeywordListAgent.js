@@ -389,6 +389,11 @@ const KeywordListAgent = () => {
     setIncludeSelectedKeywords(newState.includeSelectedKeywords);
     setApiError(newState.apiError);
     
+    // Option 1: Close secondary panel if no query has been run yet
+    if (option === 1 && newState.generatedKeywords.length === 0) {
+      setIsLeftPanelOpen(false);
+    }
+    
     // Option 2 and 3: Always open secondary panel when in AI mode
     if ((option === 2 || option === 3) && isCreateWithAI) {
           setIsLeftPanelOpen(true);
