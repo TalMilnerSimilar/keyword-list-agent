@@ -30,7 +30,7 @@ const KeywordDetails = ({
   const [hasGenerated, setHasGenerated] = useState(false);
   const [lastGeneratedTopic, setLastGeneratedTopic] = useState("");
   const [includeSelectedKeywords, setIncludeSelectedKeywords] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
+  // Removed unused tooltip state
   const containerRef = useRef(null);
   const measureRef = useRef(null);
   const aiInputRef = useRef(null);

@@ -1,12 +1,6 @@
 const API_BASE_URL = 'https://shopper-agents-api.sandbox.similarweb.com/agent';
 
-// Import compromise for NLP-based keyword extraction
-let nlp;
-try {
-  nlp = require('compromise');
-} catch (error) {
-  console.warn('Compromise library not available, using fallback naming');
-}
+// Import compromise for NLP-based keyword extraction (removed - no longer used)
 
 class ApiService {
   async checkHealth() {
@@ -52,12 +46,41 @@ class ApiService {
       const data = await response.json();
 
       if (response.ok) {
-        const keywords = Array.isArray(data) ? data : [];
-        return {
-          success: true,
-          keywords: keywords,
-          groupedKeywords: this.groupKeywords(keywords)
-        };
+        // Handle new API response structure with clusters
+        if (Array.isArray(data) && data.length > 0 && data[0].group_name) {
+          // New clustered response format
+          const allKeywords = [];
+          const groupedKeywords = [];
+
+          data.forEach(cluster => {
+            const clusterKeywords = cluster.keywords.map(kw => 
+              `${kw.keyword} (${kw.search_volume})`
+            );
+            
+            // Add to flat keywords list
+            allKeywords.push(...clusterKeywords);
+            
+            // Add to grouped keywords
+            groupedKeywords.push({
+              name: cluster.group_name,
+              keywords: clusterKeywords
+            });
+          });
+
+          return {
+            success: true,
+            keywords: allKeywords,
+            groupedKeywords: groupedKeywords
+          };
+        } else {
+          // Fallback to old format handling
+          const keywords = Array.isArray(data) ? data : [];
+          return {
+            success: true,
+            keywords: keywords,
+            groupedKeywords: this.groupKeywords(keywords)
+          };
+        }
       } else {
         return {
           success: false,
@@ -274,4 +297,5 @@ class ApiService {
 
 }
 
-export default new ApiService(); 
+const apiService = new ApiService();
+export default apiService; 

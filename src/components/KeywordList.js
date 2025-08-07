@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 
 const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, onKeywordToggle, isLoadingKeywords = false, selectedOption = 1 }) => {
   const wrapperRef = useRef(null);
@@ -209,7 +209,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
   };
 
   // Create keyword data structure
-  const createKeywordData = () => {
+  const createKeywordData = useCallback(() => {
     if (groupedKeywords && groupedKeywords.length > 0) {
       // Use grouped keywords from API
       return [
@@ -424,14 +424,14 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
         }
       ];
     }
-  };
+  }, [keywords, groupedKeywords]);
 
   const [keywordData, setKeywordData] = useState(createKeywordData());
 
   // Update keywordData when keywords or groupedKeywords props change
   useEffect(() => {
     setKeywordData(createKeywordData());
-  }, [keywords, groupedKeywords]);
+  }, [createKeywordData]);
 
   const renderKeywordItem = (item, level = 0, isLast = false) => {
     const hasChildren = item.children && item.children.length > 0;
@@ -674,11 +674,7 @@ const KeywordList = ({ keywords = [], groupedKeywords = null, selectedKeywords, 
                   if (match) {
                     const keywordLabel = match[1].trim();
                     const rawVol = parseInt(match[2].replace(/,/g, ''), 10);
-                    const extractVolume = (name)=>{
-                      const m=name.match(/\((\d[\d,]*)\)$/);
-                      if(!m) return 0;
-                      return parseInt(m[1].replace(/,/g,''),10);
-                    };
+                    // Removed unused extractVolume function
                     const formatVolume = (n) => {
                       if (n >= 1_000_000) {
                         const v = n / 1_000_000;

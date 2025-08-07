@@ -187,13 +187,17 @@ const KeywordListAgent = () => {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false); // Left panel visibility
   const [generatedKeywords, setGeneratedKeywords] = useState([]); // Store generated keywords
   const [groupedKeywords, setGroupedKeywords] = useState(null); // Store grouped keywords
-  const [selectedOption, setSelectedOption] = useState(1); // Track selected option
+  const [selectedOption, setSelectedOption] = useState(6); // Track selected option - Default to Option 6
   const [includeSelectedKeywords, setIncludeSelectedKeywords] = useState(false); // Track checkbox state
+  const [apiError, setApiError] = useState(null); // Track API errors for Option 6
+  const [hasNoResults, setHasNoResults] = useState(false); // Track no results state for Option 6
   const [isReviewMode, setIsReviewMode] = useState(false); // For Option 5 Focus Mode
   const [listName, setListName] = useState("New List"); // For Option 5 list name
   const [isSelectedKeywordsExpanded, setIsSelectedKeywordsExpanded] = useState(false); // For Option 5 selected keywords expansion
   const [manualInput, setManualInput] = useState(''); // For Option 6 manual input
   const [isFocusMode, setIsFocusMode] = useState(false); // For Option 6 focus mode
+  const [showOptionsPanel, setShowOptionsPanel] = useState(false); // Control options panel visibility
+  const [showHoverButton, setShowHoverButton] = useState(false); // Control hover button visibility
   
   // Store states for each option
   const [optionStates, setOptionStates] = useState({
@@ -243,7 +247,6 @@ const KeywordListAgent = () => {
   
   // API state
   const [isLoadingKeywords, setIsLoadingKeywords] = useState(false);
-  const [apiError, setApiError] = useState(null);
   
   const generatedKeywordsRef = useRef(null);
 
@@ -270,6 +273,11 @@ const KeywordListAgent = () => {
       resizeObserver.disconnect();
     };
   }, []);
+
+  // Toggle options panel visibility
+  const toggleOptionsPanel = () => {
+    setShowOptionsPanel(prev => !prev);
+  };
 
   const handleKeywordToggle = (keyword) => {
     setSelectedKeywords(prev => 
@@ -310,6 +318,7 @@ const KeywordListAgent = () => {
     setIsLeftPanelOpen(true);
     setIsLoadingKeywords(true);
     setApiError(null);
+    setHasNoResults(false);
 
     try {
       // If topic is empty but we have selected keywords, use the selected keywords as the topic
@@ -325,114 +334,32 @@ const KeywordListAgent = () => {
       const result = await apiService.generateKeywords(finalTopic);
       
       if (result.success) {
-        setGeneratedKeywords(result.keywords);
-        setGroupedKeywords(result.groupedKeywords);
+        if (result.keywords && result.keywords.length > 0) {
+          setGeneratedKeywords(result.keywords);
+          setGroupedKeywords(result.groupedKeywords);
+          setHasNoResults(false);
+        } else {
+          // No results found
+          setGeneratedKeywords([]);
+          setGroupedKeywords([]);
+          setHasNoResults(true);
+        }
         // Don't update the topic state with the final topic that includes selected keywords
         // The topic state should only contain the user's original input
       } else {
         setApiError(result.error || 'Failed to generate keywords');
+        setHasNoResults(false);
       }
     } catch (error) {
       console.error('Error generating keywords:', error);
       setApiError('Network error occurred while generating keywords');
+      setHasNoResults(false);
     } finally {
       setIsLoadingKeywords(false);
     }
   };
 
-  // Generate mock keywords for testing when API is not available
-  const generateMockKeywords = (topic) => {
-    const keywordGroups = [
-      {
-        name: 'Product Types',
-        keywords: [
-          `${topic} premium`,
-          `${topic} professional`,
-          `${topic} budget`,
-          `${topic} wireless`,
-          `${topic} bluetooth`,
-          `${topic} wired`,
-          `${topic} portable`,
-          `${topic} compact`
-        ]
-      },
-      {
-        name: 'Features & Benefits',
-        keywords: [
-          `${topic} noise cancelling`,
-          `${topic} waterproof`,
-          `${topic} durable`,
-          `${topic} lightweight`,
-          `${topic} comfortable`,
-          `${topic} high quality`,
-          `${topic} long battery life`,
-          `${topic} fast charging`
-        ]
-      },
-      {
-        name: 'Use Cases',
-        keywords: [
-          `${topic} for gaming`,
-          `${topic} for work`,
-          `${topic} for travel`,
-          `${topic} for exercise`,
-          `${topic} for music`,
-          `${topic} for calls`,
-          `${topic} for streaming`,
-          `${topic} for recording`
-        ]
-      },
-      {
-        name: 'Comparisons',
-        keywords: [
-          `${topic} vs airpods`,
-          `${topic} vs sony`,
-          `${topic} vs bose`,
-          `${topic} alternatives`,
-          `${topic} competitors`,
-          `${topic} similar products`
-        ]
-      },
-      {
-        name: 'Reviews & Ratings',
-        keywords: [
-          `${topic} review`,
-          `${topic} ratings`,
-          `${topic} customer reviews`,
-          `${topic} pros and cons`,
-          `${topic} complaints`,
-          `${topic} problems`,
-          `${topic} issues`,
-          `${topic} feedback`,
-          `${topic} testimonials`,
-          `${topic} user experience`
-        ]
-      },
-      {
-        name: 'Shopping',
-        keywords: [
-          `${topic} price`,
-          `${topic} cost`,
-          `${topic} discount`,
-          `${topic} sale`,
-          `${topic} deals`
-        ]
-      },
-      {
-        name: 'Technical',
-        keywords: [
-          `${topic} specifications`,
-          `${topic} specs`,
-          `${topic} technical details`,
-          `${topic} features list`,
-          `${topic} specifications sheet`
-        ]
-      }
-    ];
-
-    // Flatten all keywords into a single array
-    return keywordGroups.flatMap(group => group.keywords);
-  };
+  // Removed unused generateMockKeywords function
 
   const handleClearAll = () => {
       setSelectedKeywords([]);
@@ -499,7 +426,7 @@ const KeywordListAgent = () => {
     if (!isPanelOpen) setIsPanelOpen(true);
   };
 
-  return (
+    return (
     <div className="flex h-screen bg-cover bg-center bg-no-repeat relative" 
          style={{ backgroundImage: "url('/dashboard-background.png')" }}>
       
@@ -508,12 +435,20 @@ const KeywordListAgent = () => {
       
       {/* Main content */}
       <div className="relative flex w-full">
-        {/* Left sidebar with option buttons - appears when panels are open */}
-        {(isPanelOpen || isLeftPanelOpen || isLoadingKeywords) && (
-          <div className="fixed top-0 left-0 h-screen w-[200px] bg-white shadow-lg z-30 flex flex-col">
+        {/* Left sidebar with option buttons - appears when toggled via hover button */}
+        <div className={`fixed top-0 left-0 h-screen w-[200px] bg-white shadow-xl z-30 flex flex-col transform transition-all duration-700 ease-out ${
+          showOptionsPanel 
+            ? 'translate-x-0 opacity-100 scale-100 blur-0' 
+            : '-translate-x-full opacity-0 scale-95 blur-sm pointer-events-none'
+        }`}
+        style={{
+          transformOrigin: 'left center',
+          filter: showOptionsPanel ? 'brightness(1) contrast(1)' : 'brightness(0.8) contrast(0.8)',
+          transition: 'all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.4s ease-out'
+        }}>
             {/* Header */}
             <div className="flex items-center gap-3 px-6 pt-8 pb-4 flex-shrink-0 border-b border-[#E6E9EC]" style={{ height: '89px', paddingTop: '32px', paddingBottom: '16px' }}>
-              <h2 className="text-lg font-bold font-dm-sans text-text-primary">Options</h2>
+              <h2 className="text-lg font-bold font-dm-sans text-text-primary">Hidden Options Menu</h2>
             </div>
             
             {/* Option buttons */}
@@ -602,7 +537,6 @@ const KeywordListAgent = () => {
               </div>
             </div>
           </div>
-        )}
 
                 {/* Panels for Options 1-4 */}
         {selectedOption !== 5 && selectedOption !== 6 && (
@@ -2108,15 +2042,64 @@ const KeywordListAgent = () => {
                     </p>
                   </div>
                   <div className="flex-1 min-h-0 overflow-hidden">
-                    <KeywordList 
-                      keywords={generatedKeywords}
-                      groupedKeywords={groupedKeywords}
-                      selectedKeywords={selectedKeywords}
-                      onKeywordToggle={handleKeywordToggle}
-                      isLoadingKeywords={isLoadingKeywords}
-                      onAddToQuery={handleAddToQuery}
-                      selectedOption={selectedOption}
-                    />
+                    {apiError ? (
+                      // Error State
+                      <div className="flex flex-col items-center justify-center h-full bg-white rounded-lg border border-[#3e74fe]">
+                        <div className="flex flex-col gap-2 items-center justify-center p-0 text-center">
+                          <div className="flex flex-col gap-2 items-center justify-start">
+                            <h3 className="text-[16px] font-bold font-dm-sans text-[#092540] leading-[22px]">
+                              An Unexpected Error Occurred
+                            </h3>
+                            <p className="text-[12px] font-dm-sans text-[#6b7c8c] leading-[16px] w-[280px]">
+                              Try again, or search of a different topic
+                            </p>
+                          </div>
+                          <div className="flex flex-col gap-2.5 h-[232px] items-center justify-center px-0 py-2.5 w-[404px]">
+                            <div className="h-[236px] w-[236px] relative">
+                              <img 
+                                src="/error empty state illustration.png" 
+                                alt="Error illustration" 
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : hasNoResults ? (
+                      // No Results State
+                      <div className="flex flex-col items-center justify-center h-full bg-white rounded-lg border border-[#3e74fe]">
+                        <div className="flex flex-col gap-2 items-center justify-center p-0 text-center">
+                          <div className="flex flex-col gap-2 items-center justify-start">
+                            <h3 className="text-[16px] font-bold font-dm-sans text-[#092540] leading-[22px]">
+                              No Results were Found
+                            </h3>
+                            <p className="text-[12px] font-dm-sans text-[#6b7c8c] leading-[16px] w-[280px]">
+                              Try typing a different topic and try again
+                            </p>
+                          </div>
+                          <div className="flex flex-col gap-2.5 h-[232px] items-center justify-center px-0 py-2.5 w-[404px]">
+                            <div className="h-[150px] w-[250px] relative">
+                              <img 
+                                src="/no results empty state illustration.png" 
+                                alt="No results illustration" 
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // Normal State - Show Keywords
+                      <KeywordList 
+                        keywords={generatedKeywords}
+                        groupedKeywords={groupedKeywords}
+                        selectedKeywords={selectedKeywords}
+                        onKeywordToggle={handleKeywordToggle}
+                        isLoadingKeywords={isLoadingKeywords}
+                        onAddToQuery={handleAddToQuery}
+                        selectedOption={selectedOption}
+                      />
+                    )}
                   </div>
 
                   {/* Selected Keywords - Custom Minimized View for Option 6 */}
@@ -2216,6 +2199,38 @@ const KeywordListAgent = () => {
             </button>
           </div>
         )}
+
+        {/* Hidden hover zone in bottom left corner for options panel */}
+        <div 
+          className="fixed bottom-0 left-0 w-16 h-16 z-50"
+          onMouseEnter={() => setShowHoverButton(true)}
+          onMouseLeave={() => setShowHoverButton(false)}
+        >
+          {/* Hidden button that appears on hover */}
+          <div className={`absolute bottom-2 left-2 transition-all duration-300 ease-out ${
+            showHoverButton ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-50 blur-sm pointer-events-none'
+          }`}
+          style={{
+            transform: showHoverButton ? 'translateY(0px) rotateY(0deg)' : 'translateY(10px) rotateY(-15deg)',
+            transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}>
+            <button
+              onClick={toggleOptionsPanel}
+              className="w-10 h-10 bg-gray-800 hover:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors duration-200"
+              title={showOptionsPanel ? "Hide Options" : "Show Options"}
+            >
+              {showOptionsPanel ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                </svg>
+              )}
+            </button>
+      </div>
+    </div>
       </div>
     </div>
   );
